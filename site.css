@@ -1,0 +1,165 @@
+/* ============================================================
+   mstampfli.com — page layout on top of maka-design.
+   Components and colors come from the system; only structure,
+   motion, and page-specific arrangement live here.
+   ============================================================ */
+
+/* ---------------- nav ---------------- */
+.site-nav {
+  position: sticky;
+  top: 0;
+  z-index: 100;
+}
+
+/* ---------------- hero ---------------- */
+.hero {
+  display: grid;
+  grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  gap: var(--mk-space-7);
+  align-items: center;
+  min-height: min(calc(88vh - 60px), 720px);
+  padding-top: var(--mk-space-7);
+  padding-bottom: var(--mk-space-7);
+}
+
+.hero__name {
+  margin: 0 0 var(--mk-space-3);
+  font-size: clamp(40px, 6.5vw, 64px);
+}
+
+.hero__cursor {
+  color: var(--mk-accent);
+  margin-left: 0.08em;
+  animation: mk-blink 1.1s steps(1) infinite;
+}
+
+.hero__tagline {
+  max-width: 46ch;
+  font-size: var(--mk-text-lg);
+  margin-bottom: var(--mk-space-5);
+}
+
+.hero__actions { margin-bottom: var(--mk-space-5); }
+
+.hero__term {
+  font-variant-ligatures: none;
+  box-shadow: var(--mk-shadow-pop);
+}
+.hero__term pre { min-height: 13.5em; }
+
+.boot-ok   { color: var(--mk-success); }
+.boot-warn { color: var(--mk-warn); }
+
+@keyframes mk-blink { 50% { opacity: 0; } }
+
+/* ---------------- sections ---------------- */
+.section { padding-top: var(--mk-space-8); }
+.section__lede { max-width: 56ch; margin-bottom: var(--mk-space-6); }
+
+/* ---------------- project grid ---------------- */
+.proj-grid {
+  display: grid;
+  grid-template-columns: repeat(3, minmax(0, 1fr));
+  gap: var(--mk-space-4);
+}
+
+.proj--featured { grid-column: 1 / -1; }
+.proj--featured__body {
+  display: grid;
+  grid-template-columns: minmax(0, 1fr) minmax(0, 1fr);
+  gap: var(--mk-space-5);
+  align-items: center;
+  padding: var(--mk-space-5);
+}
+
+.proj__demo { font-variant-ligatures: none; }
+.proj__demo pre { font-size: var(--mk-text-sm); }
+
+.proj__status { margin-left: auto; }
+
+.proj__link { display: block; color: inherit; }
+.proj__link:hover { color: inherit; text-decoration: none; }
+.proj__link .mk-card { height: 100%; display: flex; flex-direction: column; }
+.proj__link .mk-card__body { flex: 1; }
+
+.proj__arrow {
+  font-family: var(--mk-font-mono);
+  font-size: var(--mk-text-sm);
+  color: var(--mk-text-3);
+  transition: color 120ms ease;
+}
+.proj__link:hover .proj__arrow { color: var(--mk-accent); }
+
+/* ---------------- about ---------------- */
+.about {
+  display: grid;
+  grid-template-columns: minmax(0, 11fr) minmax(0, 9fr);
+  gap: var(--mk-space-7);
+  align-items: start;
+}
+.about__prose p { max-width: 58ch; }
+.about__stack { font-variant-ligatures: none; }
+
+/* ---------------- maka strip ---------------- */
+.maka-strip {
+  display: flex;
+  align-items: center;
+  gap: var(--mk-space-4);
+  border: var(--mk-border-w) solid var(--mk-border);
+  border-radius: var(--mk-radius-lg);
+  background: var(--mk-surface-1);
+  padding: var(--mk-space-4) var(--mk-space-5);
+  transition: border-color 120ms ease;
+}
+.maka-strip:hover { border-color: var(--mk-accent); }
+.maka-strip__mark { width: 18px; height: 18px; }
+.maka-strip__text { margin: 0; flex: 1; min-width: 24ch; }
+
+/* ---------------- footer ---------------- */
+.footer__line { margin: var(--mk-space-3) 0 0; font-family: var(--mk-font-mono); font-size: var(--mk-text-xs); }
+
+/* ---------------- reveal motion ---------------- */
+html.js .reveal {
+  opacity: 0;
+  transform: translateY(14px);
+  transition: opacity 480ms ease, transform 480ms ease;
+}
+html.js .reveal.is-seen { opacity: 1; transform: none; }
+
+/* stagger cards inside the grid */
+.proj-grid .reveal:nth-child(2) { transition-delay: 60ms; }
+.proj-grid .reveal:nth-child(3) { transition-delay: 120ms; }
+.proj-grid .reveal:nth-child(4) { transition-delay: 180ms; }
+.proj-grid .reveal:nth-child(5) { transition-delay: 240ms; }
+.proj-grid .reveal:nth-child(6) { transition-delay: 300ms; }
+.proj-grid .reveal:nth-child(7) { transition-delay: 360ms; }
+
+@media (prefers-reduced-motion: reduce) {
+  html.js .reveal { opacity: 1; transform: none; transition: none; }
+  .hero__cursor { animation: none; }
+}
+/* hard off-switch (set by JS for ?noanim) */
+html.no-anim .reveal { opacity: 1 !important; transform: none !important; transition: none !important; }
+html.no-anim .hero__cursor { animation: none; }
+
+/* ---------------- responsive ---------------- */
+@media (max-width: 980px) {
+  .hero { grid-template-columns: 1fr; min-height: 0; }
+  .hero__term pre { min-height: 0; }
+  .proj-grid { grid-template-columns: repeat(2, minmax(0, 1fr)); }
+  .proj--featured__body { grid-template-columns: 1fr; }
+  .about { grid-template-columns: 1fr; }
+}
+
+@media (max-width: 620px) {
+  .proj-grid { grid-template-columns: 1fr; }
+  .site-nav {
+    flex-wrap: wrap;
+    height: auto;
+    padding: 10px var(--mk-space-4);
+    row-gap: 2px;
+    gap: var(--mk-space-3);
+  }
+  .mk-navbar__links { flex-wrap: wrap; }
+  .mk-navbar__link { padding: 7px 8px; }
+}
