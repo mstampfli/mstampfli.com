@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>blue-team-toolkit — mstampfli</title>
-  <meta name="description" content="Blue Team Toolkit: a menu-driven defensive-security toolkit for assessing, hardening, and monitoring Windows and Linux hosts — PowerShell + bash, for authorized use only.">
-  <meta property="og:title" content="blue-team-toolkit — defensive security tooling">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>blue-team-toolkit · mstampfli</title>
+  <meta name="description" content="Blue Team Toolkit: a menu-driven defensive-security toolkit for assessing, hardening, and monitoring Windows and Linux hosts, PowerShell + bash, for authorized use only.">
+  <meta property="og:title" content="blue-team-toolkit, defensive security tooling">
   <meta property="og:description" content="Menu-driven Windows + Linux defense: install → map → recommend → harden → triage → hunt. CCDC-style prep, authorized use only.">
   <meta property="og:url" content="https://mstampfli.com/projects/blue-team-toolkit.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
@@ -27,7 +27,7 @@
 <header class="mk-navbar site-nav">
   <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
   <nav class="mk-navbar__links" aria-label="site">
-    <a class="mk-navbar__link" href="/#projects">projects</a>
+    <a class="mk-navbar__link" href="/projects">projects</a>
     <a class="mk-navbar__link" href="/#about">about</a>
     <a class="mk-navbar__link" href="/#contact">contact</a>
     <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
@@ -36,14 +36,14 @@
 
 <main class="mk-container proj-page">
 
-  <a class="proj-back" href="/#projects">← all projects</a>
+  <a class="proj-back" href="/projects">← all projects</a>
 
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / blue-team-toolkit</span>
     <h1>blue-team-toolkit</h1>
     <p class="proj-hero__lede mk-muted">A menu-driven defensive-security toolkit for rapidly assessing,
     hardening, and monitoring Windows and Linux hosts under time pressure. One workflow wraps a curated set
-    of well-known DFIR, hardening, and recon tools: install → map → recommend → harden → triage → hunt —
+    of well-known DFIR, hardening, and recon tools: install → map → recommend → harden → triage → hunt, 
     built for CCDC-style competition prep and lab use.</p>
     <div class="mk-row proj-hero__meta">
       <span class="mk-tag">powershell</span>
@@ -53,7 +53,7 @@
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/blue-team-toolkit">source →</a>
-      <a class="mk-btn mk-btn--ghost" href="/#projects">other projects</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
     </div>
   </header>
 
@@ -70,7 +70,7 @@
       <div class="proj-section">
         <h2>the idea</h2>
         <p>Defending a system is the final exam for understanding it. To harden a host you first
-        have to know what it is, what it exposes, and what already looks wrong — so the toolkit
+        have to know what it is, what it exposes, and what already looks wrong, so the toolkit
         wraps that whole loop behind a single menu. Each platform has its own entry point, but
         the Windows and Linux sides mirror each other in structure and output format, so the same
         workflow carries across the room under time pressure.</p>
@@ -79,7 +79,7 @@
       <div class="mk-alert proj-section">
         <span class="mk-alert__tag">[ scope ]</span>
         <div class="mk-alert__body">
-          <p>This is <strong>defensive (blue team) tooling intended for authorized use only</strong> —
+          <p>This is <strong>defensive (blue team) tooling intended for authorized use only</strong>, 
           Collegiate Cyber Defense Competition (CCDC) style exercises, lab environments, and systems
           you own or are explicitly cleared to defend. Some bundled tools (nmap, NetExec, nuclei,
           LinPEAS/WinPEAS, SharpHound) are dual-use; run them only against in-scope assets.</p>
@@ -88,8 +88,8 @@
 
       <div class="proj-section">
         <h2>scope</h2>
-        <p>The menus and inline comments reference competition workflow — "battle plan" sections and a
-        "CyLG kill chain" — because that is the context it was built for. Two entry points launch identical
+        <p>The menus and inline comments reference competition workflow, "battle plan" sections and a
+        "CyLG kill chain", because that is the context it was built for. Two entry points launch identical
         menu structures: <code>prep.ps1</code> (Windows console menu) and <code>prep.sh</code> (Linux
         whiptail menu). Both create an <code>output/</code> tree (reports, logs, <code>findings.jsonl</code>,
         <code>facts.json</code>) and a <code>tools/</code> directory next to the script; per-platform logic
@@ -99,20 +99,20 @@
       <div class="proj-section">
         <h2>the workflow</h2>
         <ul class="proj-feats">
-          <li><strong>install</strong> — the installer reads <code>tools.json</code> and installs every
+          <li><strong>install</strong>, the installer reads <code>tools.json</code> and installs every
           tool, or a custom selection, via <code>winget</code>, <code>apt</code>, <code>pipx</code>/<code>pip</code>,
           direct URL, <code>git clone</code>, and GitHub-release asset matching.</li>
-          <li><strong>map</strong> — a discovery pass writes <code>facts.json</code>: OS identity, role
+          <li><strong>map</strong>, a discovery pass writes <code>facts.json</code>: OS identity, role
           detection, security posture, listening ports with bind-interface exposure analysis, privileged
           services, firewall posture, and which bundled tools are present. Optional heavy passes add
           WinPEAS/autoruns/nmap or lynis/linpeas/nmap.</li>
-          <li><strong>recommend</strong> — reads <code>facts.json</code> and prints a prioritized
+          <li><strong>recommend</strong>, reads <code>facts.json</code> and prints a prioritized
           P0/P1/P2 hardening punch list with the matching hardening step, plus tools present vs. missing.</li>
-          <li><strong>harden</strong> — a semi-automated checklist, <strong>dry-run by default</strong>,
+          <li><strong>harden</strong>, a semi-automated checklist, <strong>dry-run by default</strong>,
           with per-step confirmation and a rollback hint for every change.</li>
-          <li><strong>triage</strong> — per-host raw-state collection to a timestamped report; dispatches
+          <li><strong>triage</strong>, per-host raw-state collection to a timestamped report; dispatches
           installed scanners first, then dumps processes, sockets, persistence, accounts, and live state.</li>
-          <li><strong>hunt</strong> — a backdoor/persistence hunt that dispatches available hunters
+          <li><strong>hunt</strong>, a backdoor/persistence hunt that dispatches available hunters
           (autoruns/chainsaw/hayabusa/hollows_hunter/loki), then runs high-specificity "CLEAR" checks and
           drift against the saved baseline.</li>
         </ul>
@@ -122,24 +122,24 @@
         <h2>modules</h2>
         <p>The per-platform menu maps onto a shared set of library modules; both sides are at feature parity.</p>
         <ul class="proj-feats">
-          <li><strong>installer</strong> — manifest-driven install across multiple package managers and
+          <li><strong>installer</strong>, manifest-driven install across multiple package managers and
           download methods.</li>
-          <li><strong>map</strong> — host discovery into <code>facts.json</code>; roles, ports, posture,
+          <li><strong>map</strong>, host discovery into <code>facts.json</code>; roles, ports, posture,
           and tool inventory.</li>
-          <li><strong>recommend</strong> — turns the facts into a prioritized P0/P1/P2 hardening punch list.</li>
-          <li><strong>harden</strong> — Windows: LSA RunAsPPL, disable SMBv1, SMB signing, the SMBGhost
+          <li><strong>recommend</strong>, turns the facts into a prioritized P0/P1/P2 hardening punch list.</li>
+          <li><strong>harden</strong>, Windows: LSA RunAsPPL, disable SMBv1, SMB signing, the SMBGhost
           workaround, Print Spooler, LLMNR/NetBIOS/WPAD, NTLMv2-only, PowerShell logging, audit policy, a
           persistence baseline snapshot. Linux: SSH lockdown, auditd with the Neo23x0 ruleset, fail2ban,
           UFW default-deny, sysctl hardening, the PwnKit pkexec workaround, and package/service baselines.</li>
-          <li><strong>triage</strong> — dispatches WinPEAS/autoruns/sigcheck or
+          <li><strong>triage</strong>, dispatches WinPEAS/autoruns/sigcheck or
           lynis/linpeas/rkhunter/chkrootkit, then collects live state.</li>
-          <li><strong>hunt</strong> — recent accounts, services/tasks in writable paths, masquerading
+          <li><strong>hunt</strong>, recent accounts, services/tasks in writable paths, masquerading
           processes, Defender tamper/exclusions, suspicious listen ports, privileged-group changes,
           WMI/AppInit persistence, web-shell paths, and baseline drift.</li>
-          <li><strong>recon</strong> — air-gap-aware network recon. INTERNAL: nmap discovery + service scan
+          <li><strong>recon</strong>, air-gap-aware network recon. INTERNAL: nmap discovery + service scan
           + NetExec SMB enum + nuclei against web hosts. EXTERNAL: Shodan InternetDB, crt.sh subdomain pull,
           DNS enum, and NAT-hairpin nmap, into an editable <code>recon-targets.txt</code>.</li>
-          <li><strong>findings</strong> — a viewer for the persistent <code>findings.jsonl</code>
+          <li><strong>findings</strong>, a viewer for the persistent <code>findings.jsonl</code>
           accumulated across runs; summary, recent, by-type, and deduped CSV export.</li>
         </ul>
       </div>
@@ -148,7 +148,7 @@
         <span class="mk-alert__tag">[ status ]</span>
         <div class="mk-alert__body">
           <p>Single-author project built for CCDC-style competition prep and lab use; the Windows and Linux
-          sides are at feature parity. No automated tests — review the hardening dry-run output before
+          sides are at feature parity. No automated tests, review the hardening dry-run output before
           applying changes to any host you care about, and run the dual-use tools only against in-scope assets.</p>
         </div>
       </div>
@@ -156,7 +156,7 @@
 
     <aside class="proj-aside reveal">
       <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>prep.sh — map → punch list</div>
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>prep.sh · map → punch list</div>
         <pre><code><span class="tok-p">$ </span><span class="tok-k">./prep.sh</span>
 <span class="tok-c"># whiptail menu: suggested order is</span>
 <span class="tok-c"># 1 install → 6 map → 7 recommend</span>
@@ -186,11 +186,11 @@ tools/        <span class="tok-c"># downloaded on demand</span></code></pre>
         <div class="mk-card__header"><h3 class="mk-card__title">requirements</h3></div>
         <div class="mk-card__body">
           <ul class="proj-feats">
-            <li><strong>Linux</strong> — bash with <code>whiptail</code>, <code>jq</code>, <code>curl</code>
+            <li><strong>Linux</strong>, bash with <code>whiptail</code>, <code>jq</code>, <code>curl</code>
             (checked at startup); Debian/Ubuntu-family assumed. Hardening and parts of triage use <code>sudo</code>.</li>
-            <li><strong>Windows</strong> — Windows PowerShell 5.1+; the hardening module requires an
+            <li><strong>Windows</strong>, Windows PowerShell 5.1+; the hardening module requires an
             elevated (Administrator) session and refuses to run otherwise.</li>
-            <li><strong>tools</strong> — bundled third-party tools download into <code>tools/</code> on
+            <li><strong>tools</strong>, bundled third-party tools download into <code>tools/</code> on
             demand; nothing is committed to the repo.</li>
           </ul>
         </div>
@@ -210,7 +210,7 @@ tools/        <span class="tok-c"># downloaded on demand</span></code></pre>
       <h4 class="mk-footer__heading">project</h4>
       <div class="mk-footer__links">
         <a href="https://github.com/mstampfli/blue-team-toolkit">source</a>
-        <a href="/#projects">all projects</a>
+        <a href="/projects">all projects</a>
       </div>
     </div>
     <div>

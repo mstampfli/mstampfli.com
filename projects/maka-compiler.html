@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>maka — mstampfli</title>
-  <meta name="description" content="Maka: a small statically typed language with optionals, flow-sensitive narrowing, arrays, and slices — compiled to C by a ~10k-line Python compiler.">
-  <meta property="og:title" content="maka — a typechecked language that compiles to C">
-  <meta property="og:description" content="Optionals with flow narrowing, data/logic blocks, arrays & slices, refs, modules — a four-stage Python compiler emitting C.">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>maka · mstampfli</title>
+  <meta name="description" content="Maka: a small statically typed language with optionals, flow-sensitive narrowing, arrays, and slices, compiled to C by a ~10k-line Python compiler.">
+  <meta property="og:title" content="maka, a typechecked language that compiles to C">
+  <meta property="og:description" content="Optionals with flow narrowing, data/logic blocks, arrays & slices, refs, modules, a four-stage Python compiler emitting C.">
   <meta property="og:url" content="https://mstampfli.com/projects/maka-compiler.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -27,7 +27,7 @@
 <header class="mk-navbar site-nav">
   <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
   <nav class="mk-navbar__links" aria-label="site">
-    <a class="mk-navbar__link" href="/#projects">projects</a>
+    <a class="mk-navbar__link" href="/projects">projects</a>
     <a class="mk-navbar__link" href="/#about">about</a>
     <a class="mk-navbar__link" href="/#contact">contact</a>
     <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
@@ -36,13 +36,13 @@
 
 <main class="mk-container proj-page">
 
-  <a class="proj-back" href="/#projects">← all projects</a>
+  <a class="proj-back" href="/projects">← all projects</a>
 
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / maka</span>
     <h1>maka</h1>
-    <p class="proj-hero__lede mk-muted">A small statically typed language — optionals with
-    flow-sensitive narrowing, fixed-size arrays, slices, references, and modules — compiled
+    <p class="proj-hero__lede mk-muted">A small statically typed language, optionals with
+    flow-sensitive narrowing, fixed-size arrays, slices, references, and modules, compiled
     to C by a ~10k-line Python compiler. The outstanding, safe, and revolutionary
     programming language, if you grade generously.</p>
     <div class="mk-row proj-hero__meta">
@@ -53,7 +53,7 @@
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/Maka-compiler">source →</a>
-      <a class="mk-btn mk-btn--ghost" href="/#projects">other projects</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
     </div>
   </header>
 
@@ -72,7 +72,7 @@
         <p>Maka is a language built mostly to understand what a compiler actually
         guarantees. Static types catch a class of mistakes; optionals and flow-sensitive
         narrowing catch another. The point is to feel where those guarantees come from by
-        writing every stage — lexer through C codegen — by hand, with no dependencies
+        writing every stage, lexer through C codegen, by hand, with no dependencies
         beyond Python 3.10+ and a C compiler.</p>
         <p>The result is small and honest: about 10k lines of Python that turn a typed
         Maka source file into a single C file, link it against a tiny runtime, and hand it
@@ -87,25 +87,25 @@
         idea is optionals: <code>?T</code> values are unwrapped with <code>x!</code> only
         after a flow-checked <code>x?</code> test, so the typechecker knows the unwrap is
         safe. The example below declares a <code>data</code> struct and a <code>logic</code>
-        block, mutates an array element, and narrows an optional — it prints
+        block, mutates an array element, and narrows an optional, it prints
         <code>7</code>, <code>42</code>, <code>7</code>.</p>
         <ul class="proj-feats">
-          <li><strong>data / logic</strong> — <code>data</code> structs with per-field defaults; <code>logic Name { ... }</code> namespaces functions, called as <code>Name.func(...)</code> as a stand-in for methods.</li>
-          <li><strong>struct literals</strong> — <code>{ x = 3, y = 4 }</code> desugared against the expected type, including nested fields.</li>
+          <li><strong>data / logic</strong>, <code>data</code> structs with per-field defaults; <code>logic Name { ... }</code> namespaces functions, called as <code>Name.func(...)</code> as a stand-in for methods.</li>
+          <li><strong>struct literals</strong>, <code>{ x = 3, y = 4 }</code> desugared against the expected type, including nested fields.</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>features</h2>
         <ul class="proj-feats">
-          <li><strong>Optionals with flow narrowing</strong> — <code>?T</code> with <code>none</code>, the check operator <code>x?</code>, and unwrap <code>x!</code>; unwrapping is flow-checked inside <code>if (x?)</code>, <code>while (x?)</code>, or a <code>for</code> condition. Optionals nest (<code>??T</code>) and lift implicitly through array elements, returns, and call arguments.</li>
-          <li><strong>data &amp; logic blocks</strong> — <code>data</code> declarations with field defaults; <code>logic</code> blocks grouping functions under a namespace.</li>
-          <li><strong>Arrays &amp; slices</strong> — fixed-size <code>[3]int</code> with literals and runtime bounds checking; slices (<code>[]int</code>, <code>[]Point</code>) view arrays with indexing and mutability-checked element assignment.</li>
-          <li><strong>References</strong> — non-null <code>&amp;T</code> references, created with <code>&amp;x</code>.</li>
-          <li><strong>Mutability</strong> — <code>const</code> default and <code>mut</code> on variables and parameters; writes through non-<code>mut</code> bindings are rejected.</li>
-          <li><strong>Strings &amp; chars</strong> — string literals as <code>char</code> arrays (<code>[3]char s = "hey"</code>), char literals with the usual escapes.</li>
-          <li><strong>Modules</strong> — one module per file, <code>import</code> with qualified access (<code>Math.add</code>), resolved recursively from the source directory.</li>
-          <li><strong>Control flow &amp; builtins</strong> — <code>if</code>/<code>else</code>, <code>while</code>, C-style <code>for</code>, <code>break</code>/<code>continue</code>/<code>return</code>, compound assignment, and the overloaded <code>log</code> builtin (no implicit newline).</li>
+          <li><strong>Optionals with flow narrowing</strong>, <code>?T</code> with <code>none</code>, the check operator <code>x?</code>, and unwrap <code>x!</code>; unwrapping is flow-checked inside <code>if (x?)</code>, <code>while (x?)</code>, or a <code>for</code> condition. Optionals nest (<code>??T</code>) and lift implicitly through array elements, returns, and call arguments.</li>
+          <li><strong>data &amp; logic blocks</strong>, <code>data</code> declarations with field defaults; <code>logic</code> blocks grouping functions under a namespace.</li>
+          <li><strong>Arrays &amp; slices</strong>, fixed-size <code>[3]int</code> with literals and runtime bounds checking; slices (<code>[]int</code>, <code>[]Point</code>) view arrays with indexing and mutability-checked element assignment.</li>
+          <li><strong>References</strong>, non-null <code>&amp;T</code> references, created with <code>&amp;x</code>.</li>
+          <li><strong>Mutability</strong>, <code>const</code> default and <code>mut</code> on variables and parameters; writes through non-<code>mut</code> bindings are rejected.</li>
+          <li><strong>Strings &amp; chars</strong>, string literals as <code>char</code> arrays (<code>[3]char s = "hey"</code>), char literals with the usual escapes.</li>
+          <li><strong>Modules</strong>, one module per file, <code>import</code> with qualified access (<code>Math.add</code>), resolved recursively from the source directory.</li>
+          <li><strong>Control flow &amp; builtins</strong>, <code>if</code>/<code>else</code>, <code>while</code>, C-style <code>for</code>, <code>break</code>/<code>continue</code>/<code>return</code>, compound assignment, and the overloaded <code>log</code> builtin (no implicit newline).</li>
         </ul>
       </div>
 
@@ -113,11 +113,11 @@
         <h2>pipeline</h2>
         <p><code>main.py</code> drives a classic four-stage pipeline, all in <code>compiler/</code>.</p>
         <ul class="proj-feats">
-          <li><strong>Lexer</strong> (<code>lexer.py</code>) — hand-written state machine producing tokens.</li>
-          <li><strong>Parser</strong> (<code>parser.py</code>) — recursive descent into an AST (<code>ast.py</code>), one module per file.</li>
-          <li><strong>Typechecker</strong> (<code>typechecker.py</code>) — checks all modules from the root, enforcing mutability, optional flow rules, struct-literal desugaring, and warnings (e.g. implicit int→float).</li>
-          <li><strong>C codegen</strong> (<code>codegen_c.py</code>) — emits a single C file; optionals become tagged structs, slices become pointer+length pairs, names are mangled per module.</li>
-          <li><strong>cc</strong> — the generated C links against <code>compiler/runtime.c</code> (logging, panics) and is built with <code>gcc</code>.</li>
+          <li><strong>Lexer</strong> (<code>lexer.py</code>), hand-written state machine producing tokens.</li>
+          <li><strong>Parser</strong> (<code>parser.py</code>), recursive descent into an AST (<code>ast.py</code>), one module per file.</li>
+          <li><strong>Typechecker</strong> (<code>typechecker.py</code>), checks all modules from the root, enforcing mutability, optional flow rules, struct-literal desugaring, and warnings (e.g. implicit int→float).</li>
+          <li><strong>C codegen</strong> (<code>codegen_c.py</code>), emits a single C file; optionals become tagged structs, slices become pointer+length pairs, names are mangled per module.</li>
+          <li><strong>cc</strong>, the generated C links against <code>compiler/runtime.c</code> (logging, panics) and is built with <code>gcc</code>.</li>
         </ul>
       </div>
 
@@ -135,7 +135,7 @@
 
     <aside class="proj-aside reveal">
       <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>demo.maka — prints 7, 42, 7</div>
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>demo.maka · prints 7, 42, 7</div>
         <pre><code><span class="tok-k">module</span> demo;
 
 <span class="tok-k">data</span> <span class="tok-t">Point</span> {
@@ -184,9 +184,9 @@
         <div class="mk-card__header"><h3 class="mk-card__title">notes</h3></div>
         <div class="mk-card__body">
           <ul class="proj-feats">
-            <li><strong>deps</strong> — Python 3.10+ and a C compiler, nothing else.</li>
-            <li><strong>reserved</strong> — <code>pub</code> and <code>embed</code> are keywords, not yet implemented. No generics.</li>
-            <li><strong>tests</strong> — 300+ <code>.maka</code> programs grouped by phase; <code>_ok</code> files compile, <code>_err</code> files must be rejected.</li>
+            <li><strong>deps</strong>, Python 3.10+ and a C compiler, nothing else.</li>
+            <li><strong>reserved</strong>, <code>pub</code> and <code>embed</code> are keywords, not yet implemented. No generics.</li>
+            <li><strong>tests</strong>, 300+ <code>.maka</code> programs grouped by phase; <code>_ok</code> files compile, <code>_err</code> files must be rejected.</li>
           </ul>
         </div>
       </div>
@@ -205,7 +205,7 @@
       <h4 class="mk-footer__heading">project</h4>
       <div class="mk-footer__links">
         <a href="https://github.com/mstampfli/Maka-compiler">source</a>
-        <a href="/#projects">all projects</a>
+        <a href="/projects">all projects</a>
       </div>
     </div>
     <div>

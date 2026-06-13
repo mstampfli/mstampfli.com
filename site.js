@@ -1,4 +1,4 @@
-/* mstampfli.com — theme toggle, boot typing, clock, reveals. no deps. */
+/* mstampfli.com, theme toggle, boot typing, clock, reveals. no deps. */
 (function () {
   "use strict";
 
@@ -46,7 +46,7 @@
     })();
   }
 
-  /* ---------- clock (server lives in nbg1 — CET/CEST) ---------- */
+  /* ---------- clock (server lives in nbg1, CET/CEST) ---------- */
   var clock = document.getElementById("clock");
   if (clock) {
     var fmt = new Intl.DateTimeFormat("de-CH", {

@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>makaos — mstampfli</title>
-  <meta name="description" content="MakaOS: a 64-bit x86-64 operating system written from scratch — NASM bootloader, C kernel, ring-3 userspace, ext2 read/write.">
-  <meta property="og:title" content="makaos — a 64-bit OS from scratch">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>makaos · mstampfli</title>
+  <meta name="description" content="MakaOS: a 64-bit x86-64 operating system written from scratch, NASM bootloader, C kernel, ring-3 userspace, ext2 read/write.">
+  <meta property="og:title" content="makaos, a 64-bit OS from scratch">
   <meta property="og:description" content="NASM bootloader, C kernel, 29 POSIX-style syscalls, ext2 read/write, a Wayland desktop in progress.">
   <meta property="og:url" content="https://mstampfli.com/projects/makaos.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
@@ -27,7 +27,7 @@
 <header class="mk-navbar site-nav">
   <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
   <nav class="mk-navbar__links" aria-label="site">
-    <a class="mk-navbar__link" href="/#projects">projects</a>
+    <a class="mk-navbar__link" href="/projects">projects</a>
     <a class="mk-navbar__link" href="/#about">about</a>
     <a class="mk-navbar__link" href="/#contact">contact</a>
     <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
@@ -36,14 +36,14 @@
 
 <main class="mk-container proj-page">
 
-  <a class="proj-back" href="/#projects">← all projects</a>
+  <a class="proj-back" href="/projects">← all projects</a>
 
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / makaos</span>
     <h1>makaos</h1>
     <p class="proj-hero__lede mk-muted">A 64-bit operating system for x86-64, built from scratch:
     a two-stage NASM bootloader, a C kernel with preemptive scheduling and ring-3 userspace,
-    a small libc, and an ext2 root filesystem — booted and tested in QEMU.</p>
+    a small libc, and an ext2 root filesystem, booted and tested in QEMU.</p>
     <div class="mk-row proj-hero__meta">
       <span class="mk-tag">c</span>
       <span class="mk-tag">nasm</span>
@@ -52,7 +52,7 @@
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/makaos">source →</a>
-      <a class="mk-btn mk-btn--ghost" href="/#projects">other projects</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
     </div>
   </header>
 
@@ -70,35 +70,35 @@
         <h2>the idea</h2>
         <p>The fastest way to understand a machine is to write the software that owns it
         end to end. MakaOS starts at a 512-byte boot sector and climbs all the way up to
-        ring-3 programs making syscalls — no firmware shortcuts, no borrowed kernel.</p>
+        ring-3 programs making syscalls, no firmware shortcuts, no borrowed kernel.</p>
       </div>
 
       <div class="proj-section">
         <h2>boot chain</h2>
         <ul class="proj-feats">
-          <li><strong>Stage 1</strong> — 512-byte MBR boot sector, loads stage 2 via INT 13h LBA reads.</li>
-          <li><strong>Stage 2</strong> — collects the E820 memory map and VBE video info, switches real → protected → long mode.</li>
-          <li><strong>Kernel loader</strong> — freestanding C with its own AHCI/ATA driver, early PMM/VMM, higher-half handoff.</li>
-          <li><strong>UEFI path</strong> — a clang-built <code>BOOTX64.EFI</code> on a GPT disk (FAT32 ESP + ext2), on the test branch.</li>
+          <li><strong>Stage 1</strong>, 512-byte MBR boot sector, loads stage 2 via INT 13h LBA reads.</li>
+          <li><strong>Stage 2</strong>, collects the E820 memory map and VBE video info, switches real → protected → long mode.</li>
+          <li><strong>Kernel loader</strong>, freestanding C with its own AHCI/ATA driver, early PMM/VMM, higher-half handoff.</li>
+          <li><strong>UEFI path</strong>, a clang-built <code>BOOTX64.EFI</code> on a GPT disk (FAT32 ESP + ext2), on the desktop branch.</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>kernel</h2>
         <ul class="proj-feats">
-          <li><strong>Memory</strong> — buddy-allocator PMM from the E820 map, demand-paged VMM with per-process VMAs, higher-half mapping.</li>
-          <li><strong>Scheduling</strong> — preemptive, PIT-driven, processes and kernel threads, context switch in assembly.</li>
-          <li><strong>Userspace</strong> — ELF64 loader, <code>syscall</code>/<code>sysret</code> fast path via STAR/LSTAR MSRs, per-process kernel stacks.</li>
-          <li><strong>29 syscalls</strong> — <code>fork</code>/<code>exec</code>/<code>waitpid</code>, <code>pipe</code>, <code>dup</code>/<code>dup2</code>, signals, <code>brk</code>, full path & directory calls.</li>
-          <li><strong>Storage & FS</strong> — PCI enumeration, IRQ-driven AHCI, ext2 <em>read and write</em> + FAT32 behind a VFS.</li>
-          <li><strong>Shell</strong> — PS/2 keyboard and a VGA text-mode shell: <code>ls</code>, <code>cat</code>, <code>run</code>, <code>edit</code>, <code>ps</code>, …</li>
+          <li><strong>Memory</strong>, buddy-allocator PMM from the E820 map, demand-paged VMM with per-process VMAs, higher-half mapping.</li>
+          <li><strong>Scheduling</strong>, preemptive, PIT-driven, processes and kernel threads, context switch in assembly.</li>
+          <li><strong>Userspace</strong>, ELF64 loader, <code>syscall</code>/<code>sysret</code> fast path via STAR/LSTAR MSRs, per-process kernel stacks.</li>
+          <li><strong>29 syscalls</strong>, <code>fork</code>/<code>exec</code>/<code>waitpid</code>, <code>pipe</code>, <code>dup</code>/<code>dup2</code>, signals, <code>brk</code>, full path & directory calls.</li>
+          <li><strong>Storage & FS</strong>, PCI enumeration, IRQ-driven AHCI, ext2 <em>read and write</em> + FAT32 behind a VFS.</li>
+          <li><strong>Shell</strong>, PS/2 keyboard and a VGA text-mode shell: <code>ls</code>, <code>cat</code>, <code>run</code>, <code>edit</code>, <code>ps</code>, …</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>where it's going</h2>
-        <p>The <code>test</code> branch carries a ports tree — cross-compiled bash, foot, SDL3,
-        libinput, libseat, and wlroots — working toward a Wayland desktop running on an OS
+        <p>The <code>desktop</code> branch carries a ports tree, cross-compiled bash, foot, SDL3,
+        libinput, libseat, and wlroots, working toward a Wayland desktop running on an OS
         that began life as 512 bytes of boot sector.</p>
       </div>
 
@@ -114,7 +114,7 @@
 
     <aside class="proj-aside reveal">
       <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>build.sh — boot</div>
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>build.sh · boot</div>
         <pre><code><span class="tok-p">$ </span><span class="tok-k">./build.sh</span>
 <span class="tok-c"># compile every stage, assemble disk.img,</span>
 <span class="tok-c"># populate /bin, boot in qemu via ahci</span>
@@ -142,9 +142,9 @@ build_uefi.sh <span class="tok-c"># uefi/ovmf</span></code></pre>
         <div class="mk-card__header"><h3 class="mk-card__title">branches</h3></div>
         <div class="mk-card__body">
           <ul class="proj-feats">
-            <li><strong>main</strong> — the core OS, stable in QEMU.</li>
-            <li><strong>dev</strong> — TTY line discipline, <code>/dev/tty</code>, kernel permissions.</li>
-            <li><strong>test</strong> — the desktop ports tree (wlroots & friends).</li>
+            <li><strong>main</strong>, the core OS, stable in QEMU.</li>
+            <li><strong>desktop</strong>, the Wayland ports tree (wlroots & friends).</li>
+            <li><strong>tty-permissions</strong>, TTY line discipline, <code>/dev/tty</code>, kernel permissions.</li>
           </ul>
         </div>
       </div>
@@ -163,7 +163,7 @@ build_uefi.sh <span class="tok-c"># uefi/ovmf</span></code></pre>
       <h4 class="mk-footer__heading">project</h4>
       <div class="mk-footer__links">
         <a href="https://github.com/mstampfli/makaos">source</a>
-        <a href="/#projects">all projects</a>
+        <a href="/projects">all projects</a>
       </div>
     </div>
     <div>

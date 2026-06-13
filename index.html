@@ -2,11 +2,11 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>mstampfli — builds from the bottom up</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>mstampfli · builds from the bottom up</title>
   <meta name="description" content="marc stampfli builds operating systems, languages, and engines from zero. cybersecurity student.">
-  <meta property="og:title" content="mstampfli — builds from the bottom up">
-  <meta property="og:description" content="operating systems, languages, engines — written from zero.">
+  <meta property="og:title" content="mstampfli · builds from the bottom up">
+  <meta property="og:description" content="operating systems, languages, engines, written from zero.">
   <meta property="og:url" content="https://mstampfli.com/">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -28,7 +28,7 @@
 <header class="mk-navbar site-nav">
   <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
   <nav class="mk-navbar__links" aria-label="site">
-    <a class="mk-navbar__link" href="#projects">projects</a>
+    <a class="mk-navbar__link" href="/projects">projects</a>
     <a class="mk-navbar__link" href="#about">about</a>
     <a class="mk-navbar__link" href="#contact">contact</a>
     <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
@@ -43,11 +43,11 @@
       <span class="mk-kicker">mstampfli.com / init</span>
       <h1 class="hero__name">marc stampfli<span class="hero__cursor" aria-hidden="true">▮</span></h1>
       <p class="hero__tagline mk-muted">
-        I build things from the bottom up — operating systems, languages,
-        engines — to understand how they actually work.
+        I build things from the bottom up: operating systems, languages,
+        and engines, to understand how they actually work.
       </p>
       <div class="mk-row hero__actions">
-        <a class="mk-btn mk-btn--primary" href="#projects">view_projects</a>
+        <a class="mk-btn mk-btn--primary" href="/projects">view_projects</a>
         <a class="mk-btn mk-btn--ghost" href="https://github.com/mstampfli">github →</a>
       </div>
       <div class="mk-row hero__facts">
@@ -58,14 +58,14 @@
     </div>
 
     <div class="mk-code hero__term">
-      <div class="mk-code__bar"><span class="mk-code__dot"></span>boot — tty1</div>
-      <pre id="bootlog" data-boot><code><span class="tok-c">maka boot v1 — mstampfli.com</span>
+      <div class="mk-code__bar"><span class="mk-code__dot"></span>boot · tty1</div>
+      <pre id="bootlog" data-boot><code><span class="tok-c">maka boot v1 · mstampfli.com</span>
 <span class="boot-ok">[ ok ]</span> mounted /home/marc
-<span class="boot-ok">[ ok ]</span> maka-design <span class="tok-n">v1</span> — one stylesheet
+<span class="boot-ok">[ ok ]</span> maka-design <span class="tok-n">v1</span> · one stylesheet
 <span class="boot-ok">[ ok ]</span> 9 public repos online
 <span class="boot-warn">[ warn ]</span> sleep schedule not found
 <span class="tok-p">$ </span><span class="tok-k">whoami</span>
-marc — builds from zero.</code></pre>
+marc · builds from zero.</code></pre>
     </div>
   </section>
 
@@ -73,7 +73,7 @@ marc — builds from zero.</code></pre>
   <section id="projects" class="mk-container section reveal">
     <span class="mk-kicker">projects / ps ax</span>
     <h2>written from zero</h2>
-    <p class="mk-muted section__lede">no forks, no templates — every one of these started as an empty directory.</p>
+    <p class="mk-muted section__lede">no forks, no templates, every one of these started as an empty directory.</p>
 
     <div class="proj-grid">
       <article class="mk-card proj proj--featured reveal">
@@ -88,7 +88,7 @@ marc — builds from zero.</code></pre>
             NASM bootloader, C kernel with preemptive scheduling, demand-paged virtual
             memory, AHCI storage, ext2 read/write, and ring-3 userspace speaking
             29 Linux-style syscalls.</p>
-            <p class="mk-muted">Current front: cross-compiled bash, SDL3, and wlroots —
+            <p class="mk-muted">Current front: cross-compiled bash, SDL3, and wlroots, 
             a Wayland desktop, on an OS that started as 512 bytes.</p>
           </div>
           <div class="mk-code proj__demo" aria-hidden="true">
@@ -102,11 +102,11 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
         </div>
         <div class="mk-card__footer">
           <a href="https://github.com/mstampfli/makaos">source →</a>
-          <a class="mk-btn mk-btn--ghost mk-btn--sm" href="/projects/makaos.html">read more →</a>
+          <a class="mk-btn mk-btn--ghost mk-btn--sm" href="/projects/makaos">read more →</a>
         </div>
       </article>
 
-      <a class="proj__link reveal" href="/projects/voxelg.html">
+      <a class="proj__link reveal" href="/projects/voxelg">
         <article class="mk-card mk-card--link proj">
           <div class="mk-card__header">
             <h3 class="mk-card__title">02 · voxelg</h3>
@@ -120,7 +120,7 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
         </article>
       </a>
 
-      <a class="proj__link reveal" href="/projects/maka-compiler.html">
+      <a class="proj__link reveal" href="/projects/maka-compiler">
         <article class="mk-card mk-card--link proj">
           <div class="mk-card__header">
             <h3 class="mk-card__title">03 · maka</h3>
@@ -134,7 +134,7 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
         </article>
       </a>
 
-      <a class="proj__link reveal" href="/projects/maka-design.html">
+      <a class="proj__link reveal" href="/projects/maka-design">
         <article class="mk-card mk-card--link proj">
           <div class="mk-card__header">
             <h3 class="mk-card__title">04 · maka-design</h3>
@@ -142,13 +142,13 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
           </div>
           <div class="mk-card__body">
             <p>The design system drawing the page you're reading.
-            Tokens, components, two themes — one stylesheet, every site.</p>
+            Tokens, components, two themes, one stylesheet, every site.</p>
           </div>
           <div class="mk-card__footer"><span class="proj__arrow">read more →</span></div>
         </article>
       </a>
 
-      <a class="proj__link reveal" href="/projects/sekiro-coop.html">
+      <a class="proj__link reveal" href="/projects/sekiro-coop">
         <article class="mk-card mk-card--link proj">
           <div class="mk-card__header">
             <h3 class="mk-card__title">05 · sekiro-coop</h3>
@@ -162,7 +162,7 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
         </article>
       </a>
 
-      <a class="proj__link reveal" href="/projects/blue-team-toolkit.html">
+      <a class="proj__link reveal" href="/projects/blue-team-toolkit">
         <article class="mk-card mk-card--link proj">
           <div class="mk-card__header">
             <h3 class="mk-card__title">06 · blue-team-toolkit</h3>
@@ -176,14 +176,14 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
         </article>
       </a>
 
-      <a class="proj__link reveal" href="/projects/librechat-agent.html">
+      <a class="proj__link reveal" href="/projects/librechat-agent">
         <article class="mk-card mk-card--link proj">
           <div class="mk-card__header">
             <h3 class="mk-card__title">07 · librechat-agent</h3>
             <span class="mk-tag">python</span>
           </div>
           <div class="mk-card__body">
-            <p>Terminal coding agent for LibreChat-hosted LLMs — streaming,
+            <p>Terminal coding agent for LibreChat-hosted LLMs, streaming,
             background jobs, input queueing, no API key required.</p>
           </div>
           <div class="mk-card__footer"><span class="proj__arrow">read more →</span></div>
@@ -204,7 +204,7 @@ maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></p
         really know what a compiler guarantees until your own typechecker has
         lied to you once.</p>
         <p class="mk-muted">So the projects above aren't a portfolio so much as a
-        lab notebook — an OS to understand machines, a language to understand
+        lab notebook, an OS to understand machines, a language to understand
         meaning, engines to understand speed, and a blue-team kit because
         defending a system is the final exam for understanding it.</p>
       </div>
@@ -226,7 +226,7 @@ this box  <span class="tok-s">debian + caddy, nbg1</span></code></pre>
   <section class="mk-container section reveal">
     <div class="maka-strip">
       <span class="mk-logo-mark maka-strip__mark" aria-hidden="true"></span>
-      <p class="maka-strip__text">This site ships no framework and no build step —
+      <p class="maka-strip__text">This site ships no framework and no build step, 
       every pixel is drawn by <a href="https://github.com/mstampfli/maka-design">maka-design</a>,
       one shared stylesheet for every mstampfli site.</p>
       <a class="mk-btn mk-btn--ghost mk-btn--sm" href="https://mstampfli.github.io/maka-design/kitchen-sink.html">kitchen_sink →</a>
@@ -245,7 +245,7 @@ this box  <span class="tok-s">debian + caddy, nbg1</span></code></pre>
     <div>
       <h4 class="mk-footer__heading">site</h4>
       <div class="mk-footer__links">
-        <a href="#projects">projects</a>
+        <a href="/projects">projects</a>
         <a href="#about">about</a>
       </div>
     </div>

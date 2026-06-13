@@ -2,10 +2,10 @@
 <html lang="en">
 <head>
   <meta charset="utf-8">
-  <meta name="viewport" content="width=device-width, initial-scale=1">
-  <title>voxelg — mstampfli</title>
-  <meta name="description" content="voxelG: a real-time voxel engine in Rust where the entire world is rendered by a WGSL compute shader — hierarchical DDA raymarching, Gerstner water, lock-free TCP multiplayer.">
-  <meta property="og:title" content="voxelg — a GPU-raymarched voxel engine">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>voxelg · mstampfli</title>
+  <meta name="description" content="voxelG: a real-time voxel engine in Rust where the entire world is rendered by a WGSL compute shader, hierarchical DDA raymarching, Gerstner water, lock-free TCP multiplayer.">
+  <meta property="og:title" content="voxelg, a GPU-raymarched voxel engine">
   <meta property="og:description" content="Rust + WGSL: rays marched through a three-level occupancy-bit pyramid on the GPU, no triangle terrain. Gerstner water, dispersive glass, cellular-automaton physics.">
   <meta property="og:url" content="https://mstampfli.com/projects/voxelg.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
@@ -27,7 +27,7 @@
 <header class="mk-navbar site-nav">
   <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
   <nav class="mk-navbar__links" aria-label="site">
-    <a class="mk-navbar__link" href="/#projects">projects</a>
+    <a class="mk-navbar__link" href="/projects">projects</a>
     <a class="mk-navbar__link" href="/#about">about</a>
     <a class="mk-navbar__link" href="/#contact">contact</a>
     <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
@@ -36,13 +36,13 @@
 
 <main class="mk-container proj-page">
 
-  <a class="proj-back" href="/#projects">← all projects</a>
+  <a class="proj-back" href="/projects">← all projects</a>
 
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / voxelg</span>
     <h1>voxelg</h1>
     <p class="proj-hero__lede mk-muted">A real-time voxel engine in Rust where the entire world is rendered
-    by a WGSL compute shader. There is no triangle geometry for terrain — each frame, rays are marched
+    by a WGSL compute shader. There is no triangle geometry for terrain, each frame, rays are marched
     through a three-level occupancy-bit pyramid directly on the GPU, and a fullscreen-triangle blit
     presents the result.</p>
     <div class="mk-row proj-hero__meta">
@@ -53,7 +53,7 @@
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/voxelG">source →</a>
-      <a class="mk-btn mk-btn--ghost" href="/#projects">other projects</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
     </div>
   </header>
 
@@ -70,7 +70,7 @@
       <div class="proj-section">
         <h2>the idea</h2>
         <p>Skip the triangles. Instead of meshing terrain, voxelG marches rays through a three-level
-        occupancy-bit pyramid — chunk → tile → brick — entirely inside a WGSL compute shader, then blits
+        occupancy-bit pyramid, chunk → tile → brick, entirely inside a WGSL compute shader, then blits
         the result with a fullscreen triangle. The same binary runs solo, as a headless server, or as a
         multiplayer client, built on wgpu 23 and winit 0.30.</p>
       </div>
@@ -78,31 +78,31 @@
       <div class="proj-section">
         <h2>rendering</h2>
         <ul class="proj-feats">
-          <li><strong>Hierarchical DDA</strong> — a 3-level bit pyramid: one bit per 16³ tile in each 64³ chunk, one bit per 4³ brick in each tile, and a 64-bit occupancy mask per brick, with exact cell-boundary snapping.</li>
-          <li><strong>Beam pre-pass</strong> — at 1/8 resolution, one ray per 8×8 pixel block walks the world at tile granularity and writes first-hit depth to an <code>r32float</code> texture; the main pass fast-forwards to that depth minus a 16-voxel safety margin.</li>
-          <li><strong>Uniform-region compaction</strong> — CPU passes detect 4³ bricks and 16³ tiles filled with a single opaque material and publish packed byte LUTs, so the DDA terminates at the cell's entry face without descending the hierarchy.</li>
-          <li><strong>Temporal dirty-tile</strong> — dirty bricks from physics and edits are projected into 8×8 screen tiles on the CPU; the compute shader early-outs on clean tiles and both compute passes are skipped when nothing changed.</li>
-          <li><strong>Distance LOD</strong> — beyond 400 voxels the DDA terminates at brick granularity, shading with the brick's topmost solid material so distant terrain keeps its surface colour.</li>
+          <li><strong>Hierarchical DDA</strong>, a 3-level bit pyramid: one bit per 16³ tile in each 64³ chunk, one bit per 4³ brick in each tile, and a 64-bit occupancy mask per brick, with exact cell-boundary snapping.</li>
+          <li><strong>Beam pre-pass</strong>, at 1/8 resolution, one ray per 8×8 pixel block walks the world at tile granularity and writes first-hit depth to an <code>r32float</code> texture; the main pass fast-forwards to that depth minus a 16-voxel safety margin.</li>
+          <li><strong>Uniform-region compaction</strong>, CPU passes detect 4³ bricks and 16³ tiles filled with a single opaque material and publish packed byte LUTs, so the DDA terminates at the cell's entry face without descending the hierarchy.</li>
+          <li><strong>Temporal dirty-tile</strong>, dirty bricks from physics and edits are projected into 8×8 screen tiles on the CPU; the compute shader early-outs on clean tiles and both compute passes are skipped when nothing changed.</li>
+          <li><strong>Distance LOD</strong>, beyond 400 voxels the DDA terminates at brick granularity, shading with the brick's topmost solid material so distant terrain keeps its surface colour.</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>world &amp; physics</h2>
         <ul class="proj-feats">
-          <li><strong>Gerstner water</strong> — four-wave normals from closed-form height-field derivatives, Schlick Fresnel mixing a traced reflection with a Snell-refracted trace (η = 1/1.33), Beer–Lambert absorption, shoreline foam, caustics and a submerged absorption post-effect.</li>
-          <li><strong>Dispersive glass &amp; TIR</strong> — Fresnel reflection plus per-channel refraction for chromatic dispersion (n = 1.48/1.50/1.52), total-internal-reflection fallback, and distance-compounding tint.</li>
-          <li><strong>Volumetric clouds</strong> — slab-raymarched cumulus (fbm body under a coverage mask, 3 cone samples toward the sun for self-shadowing, Henyey–Greenstein scattering) plus accumulated god rays.</li>
-          <li><strong>Foliage sway</strong> — sub-voxel cube leaves, tall grass as up to 22 tapered bowed blades per voxel and crossed-plane flowers, all driven by one global wind field with per-face edge sway.</li>
-          <li><strong>Cellular-automaton sand / water / smoke</strong> — physics at 30 Hz: 8-level water level propagation, bitmask sand gravity and rising smoke, iterating only "active" bricks.</li>
+          <li><strong>Gerstner water</strong>, four-wave normals from closed-form height-field derivatives, Schlick Fresnel mixing a traced reflection with a Snell-refracted trace (η = 1/1.33), Beer, Lambert absorption, shoreline foam, caustics and a submerged absorption post-effect.</li>
+          <li><strong>Dispersive glass &amp; TIR</strong>, Fresnel reflection plus per-channel refraction for chromatic dispersion (n = 1.48/1.50/1.52), total-internal-reflection fallback, and distance-compounding tint.</li>
+          <li><strong>Volumetric clouds</strong>, slab-raymarched cumulus (fbm body under a coverage mask, 3 cone samples toward the sun for self-shadowing, Henyey, Greenstein scattering) plus accumulated god rays.</li>
+          <li><strong>Foliage sway</strong>, sub-voxel cube leaves, tall grass as up to 22 tapered bowed blades per voxel and crossed-plane flowers, all driven by one global wind field with per-face edge sway.</li>
+          <li><strong>Cellular-automaton sand / water / smoke</strong>, physics at 30 Hz: 8-level water level propagation, bitmask sand gravity and rising smoke, iterating only "active" bricks.</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>multiplayer</h2>
         <ul class="proj-feats">
-          <li><strong>Lock-free TCP</strong> — length-prefixed bincode messages; each connection gets a reader and a writer thread bridged to the single-owner game thread through crossbeam's lock-free MPMC channels, no shared mutexes.</li>
-          <li><strong>Seed sync + edit log</strong> — world state syncs by shared seed plus a persistent edit log replayed to joiners; sphere destruction travels as a single <code>Explode</code> message expanded locally on each client.</li>
-          <li><strong>Interest management</strong> — pose updates capped at 20 Hz fan out with distance-based interest (600-voxel radius); remote players render as ray-traced colour-hashed boxes.</li>
+          <li><strong>Lock-free TCP</strong>, length-prefixed bincode messages; each connection gets a reader and a writer thread bridged to the single-owner game thread through crossbeam's lock-free MPMC channels, no shared mutexes.</li>
+          <li><strong>Seed sync + edit log</strong>, world state syncs by shared seed plus a persistent edit log replayed to joiners; sphere destruction travels as a single <code>Explode</code> message expanded locally on each client.</li>
+          <li><strong>Interest management</strong>, pose updates capped at 20 Hz fan out with distance-based interest (600-voxel radius); remote players render as ray-traced colour-hashed boxes.</li>
         </ul>
       </div>
 
@@ -111,7 +111,7 @@
         <div class="mk-alert__body">
           <p>Experimental graphics playground, not a game. Terrain is seed-deterministic; the server keeps
           its edit log in memory only (no on-disk persistence), and remote players are placeholder markers.
-          Constants are tuned by eye on a single machine — expect to adjust them for yours.</p>
+          Constants are tuned by eye on a single machine, expect to adjust them for yours.</p>
         </div>
       </div>
     </div>
@@ -147,9 +147,9 @@ net.rs        <span class="tok-c"># lock-free tcp</span></code></pre>
         <div class="mk-card__header"><h3 class="mk-card__title">modes</h3></div>
         <div class="mk-card__body">
           <ul class="proj-feats">
-            <li><strong>solo</strong> — <code>cargo run --release</code>, single window.</li>
-            <li><strong>server</strong> — <code>-- --server 7878</code>, headless.</li>
-            <li><strong>client</strong> — <code>-- --connect host:7878</code> to join.</li>
+            <li><strong>solo</strong>, <code>cargo run --release</code>, single window.</li>
+            <li><strong>server</strong>, <code>-- --server 7878</code>, headless.</li>
+            <li><strong>client</strong>, <code>-- --connect host:7878</code> to join.</li>
           </ul>
         </div>
       </div>
@@ -168,7 +168,7 @@ net.rs        <span class="tok-c"># lock-free tcp</span></code></pre>
       <h4 class="mk-footer__heading">project</h4>
       <div class="mk-footer__links">
         <a href="https://github.com/mstampfli/voxelG">source</a>
-        <a href="/#projects">all projects</a>
+        <a href="/projects">all projects</a>
       </div>
     </div>
     <div>
