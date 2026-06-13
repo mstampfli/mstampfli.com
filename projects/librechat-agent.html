@@ -1,0 +1,231 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>librechat-agent — mstampfli</title>
+  <meta name="description" content="librechat-agent: a Python terminal coding agent for LibreChat-hosted LLMs — a ReAct agent that rides your browser session (no API key), with file and bash tools and a streaming TUI.">
+  <meta property="og:title" content="librechat-agent — a terminal coding agent for LibreChat">
+  <meta property="og:description" content="A Python ReAct agent that talks to LibreChat's webui REST API over session cookies — no provider API key. File + bash tools, live streaming, thinking recall, background jobs.">
+  <meta property="og:url" content="https://mstampfli.com/projects/librechat-agent.html">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/#projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/#projects">← all projects</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">projects / librechat-agent</span>
+    <h1>librechat-agent</h1>
+    <p class="proj-hero__lede mk-muted">A small terminal coding agent for LLMs hosted behind LibreChat.
+    A Python ReAct loop talks to LibreChat's webui REST API over your existing browser session —
+    no provider API key — and can read, write, and edit files, run shell commands, and stream the
+    model's answer and reasoning trace live into your terminal.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">python</span>
+      <span class="mk-tag">cli</span>
+      <span class="mk-tag">llm-agent</span>
+      <span class="mk-tag mk-tag--warn">in development</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/librechat-agent">source →</a>
+      <a class="mk-btn mk-btn--ghost" href="/#projects">other projects</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">lang</span><span class="proj-spec__v">python</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">auth</span><span class="proj-spec__v">browser session (no api key)</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">backend</span><span class="proj-spec__v">librechat</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">tools</span><span class="proj-spec__v">file + bash</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">ui</span><span class="proj-spec__v">streaming tui</span></div>
+  </section>
+
+  <div class="proj-body">
+    <div class="proj-prose reveal">
+      <div class="proj-section">
+        <h2>the idea</h2>
+        <p>Most coding agents want a provider API key. But plenty of useful models live behind
+        an org's LibreChat instance — reachable only through the same SSO-gated webui your
+        browser already uses. librechat-agent skips the key entirely: it rides your existing
+        LibreChat session and drives the model through the webui's own REST API, so any model
+        the chat UI can reach becomes a tool-using terminal agent in your current directory.</p>
+        <p>It calls no LLM provider directly. Every model call goes <code>agent → LibreChat →
+        whatever endpoint LibreChat is configured to use</code>. For local testing it can also
+        talk straight to any OpenAI-compatible endpoint (e.g. Ollama), but LibreChat is the point.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>how it works</h2>
+        <ul class="proj-feats">
+          <li><strong>ReAct loop</strong> — tool calling uses ReAct-style prompting with
+          <code>&lt;tool_call&gt;</code> JSON blocks (Qwen2.5's native format), so it works even
+          when the backend doesn't expose OpenAI tool definitions. Lenient fallback parsers catch
+          models that drift into bare-JSON or <code>TOOL_NAME: …</code> styles.</li>
+          <li><strong>Two-step protocol</strong> — each turn is a two-step exchange against
+          LibreChat's internal API: <code>POST /api/agents/chat/&lt;endpoint&gt;</code> returns a
+          <code>streamId</code>, then <code>GET /api/agents/chat/stream/&lt;streamId&gt;</code>
+          delivers the response as server-sent events.</li>
+          <li><strong>Session-cookie / JWT auth</strong> — no API key. Every request carries a
+          browser-like User-Agent, an <code>Authorization: Bearer &lt;jwt&gt;</code> access token
+          (~15 min), and the long-lived <code>refreshToken</code> cookie. On a 401 the agent
+          auto-mints a fresh JWT via <code>/api/auth/refresh</code>.</li>
+          <li><strong>Server-side state</strong> — LibreChat keeps the conversation itself; the
+          agent tracks <code>conversationId</code> / <code>parentMessageId</code> so
+          <code>resume</code> continues the same server-side conversation. Transient 429/5xx/timeout
+          failures are retried with bounded backoff.</li>
+          <li><strong>Three login modes</strong> — a real Chromium window for SSO/MFA, an
+          email+password <code>POST</code> to <code>/api/auth/login</code>, or pasting the
+          <code>refreshToken</code> cookie from your browser's devtools.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>the terminal ui</h2>
+        <ul class="proj-feats">
+          <li><strong>Live streaming</strong> — responses render token-by-token; reasoning models
+          get a separate dimmed <code>── thinking ──</code> section before the <code>── answer ──</code>.</li>
+          <li><strong>Thinking recall</strong> — press <strong>Ctrl+T</strong> (or <code>/thinking</code>)
+          to re-show the last captured reasoning trace, kept per chat.</li>
+          <li><strong>Type while it works</strong> — input typed while the agent is busy is queued
+          (<code>[queued #1: …]</code>) and auto-sent in order at the next turn boundary; manage it
+          with <code>/queue</code>, <code>/recall</code>, or the Up arrow.</li>
+          <li><strong>Background jobs</strong> — long commands run detached with log files; press
+          <strong>Ctrl+B</strong> to background an already-running foreground command, or
+          <strong>Ctrl+J</strong> for the interactive jobs menu.</li>
+          <li><strong>Slash commands</strong> — <code>/jobs</code>, <code>/kill</code>,
+          <code>/thinking</code>, <code>/mode</code>, <code>/log</code>, <code>/name</code>,
+          <code>/resume</code>-friendly chat management, and more.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>tools &amp; safety</h2>
+        <ul class="proj-feats">
+          <li><strong>Real execution</strong> — <code>run_bash</code> runs actual shell commands
+          (foreground or detached), <code>read_file</code> / <code>list_dir</code> /
+          <code>write_file</code> / <code>edit_file</code> touch real files. Writes show a colored
+          unified diff before asking permission.</li>
+          <li><strong>Permission modes</strong> — <code>safe</code> (default) confirms anything
+          destructive, <code>auto-edit</code> auto-allows file edits but asks before shell,
+          <code>yolo</code> removes all guardrails — switchable mid-chat with <code>/mode</code>.</li>
+          <li><strong>Bounded by design</strong> — foreground commands are killed after 60 s,
+          tool output sent back to the model is capped (~2000 lines / 200 KB) with a pointer to the
+          full log, and a single turn allows at most 20 chained tool calls.</li>
+          <li><strong>TLS verification is disabled</strong> for LibreChat requests, because internal
+          instances commonly use private CAs — so don't point it at hosts you don't trust.</li>
+          <li><strong>Live credentials on disk</strong> — <code>session.json</code> holds cookies +
+          JWT in <code>~/.config/cli-agent/</code>; treat it like a password.</li>
+        </ul>
+      </div>
+
+      <div class="mk-alert mk-alert--warn proj-section">
+        <span class="mk-alert__tag">[ status ]</span>
+        <div class="mk-alert__body">
+          <p>In active development. It authenticates with your LibreChat <strong>browser session
+          cookies</strong> — no provider API key — and its tools execute <strong>real commands and
+          file writes on your machine</strong>. <code>safe</code> mode confirms anything destructive;
+          <code>--yolo</code> removes the guardrails, so use it only where you'd be comfortable
+          letting a model loose.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="proj-aside reveal">
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>cli-agent — session</div>
+        <pre><code><span class="tok-p">&gt; </span><span class="tok-k">create hello.py that prints "hi", then run it</span>
+
+<span class="tok-c">── thinking ──</span>
+<span class="tok-c">need a file then a run; write_file, then run_bash…</span>
+
+<span class="tok-c">── answer ──</span>
+  <span class="tok-p">[tool]</span> write_file({'path': 'hello.py',
+              'content': 'print("hi")'})
+<span class="boot-ok">[ ok ]</span> diff applied · hello.py
+
+  <span class="tok-p">[tool]</span> run_bash({'command': 'python3 hello.py'})
+Output: hi
+
+Done — hello.py is written and prints "hi".</code></pre>
+      </div>
+
+      <div class="mk-card">
+        <div class="mk-card__header"><h3 class="mk-card__title">slash &amp; keys</h3></div>
+        <div class="mk-card__body">
+          <ul class="proj-feats">
+            <li><code>/jobs</code> · <code>/kill &lt;id&gt;</code> — list / kill background jobs.</li>
+            <li><code>/thinking</code> — last reasoning trace (also <strong>Ctrl+T</strong>).</li>
+            <li><code>/mode safe|auto-edit|yolo</code> — switch permissions mid-chat.</li>
+            <li><code>/queue</code> · <code>/recall</code> — manage queued input.</li>
+            <li><strong>Ctrl+B</strong> — background the running command.</li>
+            <li><strong>Ctrl+J</strong> — interactive jobs menu.</li>
+            <li><strong>Ctrl+O</strong> — full log of the last command.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">project</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli/librechat-agent">source</a>
+        <a href="/#projects">all projects</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:mks7@pm.me">mks7@pm.me</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>

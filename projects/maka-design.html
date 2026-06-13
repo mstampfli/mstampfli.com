@@ -1,0 +1,193 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>maka-design — mstampfli</title>
+  <meta name="description" content="maka-design: a warm, earthy, retro-terminal CSS design system — design tokens + mk- components, dark roasted-brown default and a paper-cream light variant. One stylesheet powers every mstampfli site.">
+  <meta property="og:title" content="maka-design — a warm, retro-terminal design system">
+  <meta property="og:description" content="Design tokens + mk- components in one stylesheet. Roasted-brown dark default, paper light variant, burnt-orange accent, the 2px frame signature.">
+  <meta property="og:url" content="https://mstampfli.com/projects/maka-design.html">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/#projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/#projects">← all projects</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">projects / maka-design</span>
+    <h1>maka-design</h1>
+    <p class="proj-hero__lede mk-muted">A warm, earthy, slightly retro-terminal design system: design tokens
+    and <code>mk-</code> components in one stylesheet. Dark roasted-brown by default, with a paper-cream
+    light variant — the same look reused across every mstampfli site, including the one you're reading now.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">css</span>
+      <span class="mk-tag">design-system</span>
+      <span class="mk-tag">design-tokens</span>
+      <span class="mk-tag mk-tag--accent">drawing this page</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://mstampfli.github.io/maka-design/kitchen-sink.html">kitchen_sink →</a>
+      <a class="mk-btn mk-btn--ghost" href="https://github.com/mstampfli/maka-design">source →</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">type</span><span class="proj-spec__v">css design system</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">themes</span><span class="proj-spec__v">dark + paper</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">fonts</span><span class="proj-spec__v">ibm plex mono/sans</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">accent</span><span class="proj-spec__v">burnt orange</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">signature</span><span class="proj-spec__v">2px frame</span></div>
+  </section>
+
+  <div class="proj-body">
+    <div class="proj-prose reveal">
+      <div class="proj-section">
+        <h2>the idea</h2>
+        <p>One look, defined once and reused across every site. maka-design is a single stylesheet —
+        link it and you inherit the whole language. Everything derives from one token file, so you can
+        recolor the entire system by editing a handful of custom properties: change the base palette and
+        every card, button, table, and frame follows along. No per-page CSS, no theme drift.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>foundations</h2>
+        <ul class="proj-feats">
+          <li><strong>Palette</strong> — deep roasted-brown surfaces and cream text, with a burnt-orange
+          primary accent (<code>#e0731d</code>). No blues, no purples, no gradients.</li>
+          <li><strong>The 2px frame</strong> — a warm-brown border on every framed element; on hover and
+          focus it turns orange. That frame is the Maka signature.</li>
+          <li><strong>Type</strong> — IBM Plex Mono for headings, labels, and buttons; IBM Plex Sans for
+          body copy at 15px/1.65.</li>
+          <li><strong>Texture</strong> — faint horizontal scanlines laid over the whole page at about 3%
+          opacity, themed and opt-out-able.</li>
+          <li><strong>Geometry</strong> — near-square radii (2/4/6px); depth lives in borders, not shadows.</li>
+          <li><strong>Motion</strong> — 120ms ease color/border transitions only. No bounces, no fades.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>theming</h2>
+        <p>Components reference only <em>semantic</em> tokens — <code>--mk-surface-1</code>,
+        <code>--mk-border</code>, <code>--mk-accent</code> — which alias a base palette
+        (<code>--mk-brown-*</code>, <code>--mk-orange-*</code>). Dark is the default on <code>:root</code>;
+        the paper-cream variant lives under <code>[data-theme="light"]</code> on <code>&lt;html&gt;</code>.
+        To rebrand, edit the base palette; to retune a single role, edit an alias. Status tints are derived
+        with <code>color-mix()</code> from one token each — no hand-picked tint colors exist.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>this very page</h2>
+        <p>The page you're reading is drawn entirely by maka-design. There's no framework and no build
+        step — just one <code>&lt;link&gt;</code> to <code>styles.css</code>, the <code>mk-</code> classes,
+        and the <code>--mk-*</code> tokens. The navbar, hero, spec strip, cards, code blocks, and footer
+        are all stock components. It's the system describing itself.</p>
+      </div>
+
+      <div class="mk-alert mk-alert--success proj-section">
+        <span class="mk-alert__tag">[ ok ]</span>
+        <div class="mk-alert__body">
+          <p>Want to see the paper variant? Toggle the <code>[ light_mode ]</code> switch in the nav and the
+          whole system recolors live. Or open the <a href="https://mstampfli.github.io/maka-design/kitchen-sink.html">kitchen sink</a>
+          to see every component on one page.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="proj-aside reveal">
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>index.html — link it</div>
+        <pre><code><span class="tok-c">&lt;!-- one stylesheet, the whole look --&gt;</span>
+<span class="tok-k">&lt;link</span> <span class="tok-p">rel=</span><span class="tok-s">"stylesheet"</span>
+      <span class="tok-p">href=</span><span class="tok-s">"https://mstampfli.github.io/maka-design/styles.css"</span><span class="tok-k">&gt;</span>
+
+<span class="tok-c">&lt;!-- then use mk- classes --&gt;</span>
+<span class="tok-k">&lt;button</span> <span class="tok-p">class=</span><span class="tok-s">"mk-btn mk-btn--primary"</span><span class="tok-k">&gt;</span>get_started<span class="tok-k">&lt;/button&gt;</span>
+
+<span class="tok-c">/* or reach for the tokens directly */</span>
+<span class="tok-k">.callout</span> {
+  <span class="tok-p">border:</span> <span class="tok-s">2px solid var(--mk-border)</span>;
+  <span class="tok-p">color:</span> <span class="tok-s">var(--mk-accent)</span>;
+}</code></pre>
+      </div>
+
+      <div class="mk-card">
+        <div class="mk-card__header"><h3 class="mk-card__title">components</h3></div>
+        <div class="mk-card__body">
+          <ul class="proj-feats">
+            <li><strong>navbar</strong> — brand mark, links, theme toggle.</li>
+            <li><strong>buttons</strong> — primary, ghost, sizes.</li>
+            <li><strong>cards</strong> — header / title / body.</li>
+            <li><strong>forms</strong> — inputs, selects, the <code>▾</code> chevron.</li>
+            <li><strong>tables</strong> — framed rows that tint on hover.</li>
+            <li><strong>code</strong> — title bar + monospace block.</li>
+            <li><strong>alerts</strong> — <code>[ info ]</code>, <code>[ ok ]</code>, <code>[ warn ]</code>, <code>[ fail ]</code>.</li>
+            <li><strong>footer</strong> — grid, headings, link columns.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">project</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli/maka-design">source</a>
+        <a href="/#projects">all projects</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:mks7@pm.me">mks7@pm.me</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>
