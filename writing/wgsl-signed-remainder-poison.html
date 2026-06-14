@@ -1,0 +1,229 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>-1 % 768 == 255 · mstampfli</title>
+  <meta name="description" content="A WGSL compute shader on NVIDIA returns 255 where the spec says -1. It looks like a driver bug; it isn't. How a cross-driver differential and one Vulkan spec clause root-caused a poison-value bug in the WebGPU shader toolchain.">
+  <meta property="og:title" content="-1 % 768 == 255: a poison value in WGSL signed remainder">
+  <meta property="og:description" content="It looks exactly like an NVIDIA driver bug. One clause in the Vulkan spec flips who is at fault.">
+  <meta property="og:type" content="article">
+  <meta property="og:url" content="https://mstampfli.com/writing/wgsl-signed-remainder-poison">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/">← home</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">writing / gpu</span>
+    <h1><code>-1 % 768 == 255</code></h1>
+    <p class="proj-hero__lede mk-muted">A WGSL compute shader on NVIDIA returns <code>255</code> where the
+    spec says <code>-1</code>. It looks exactly like an NVIDIA driver bug. It isn't, and one clause in the
+    Vulkan spec flips who is at fault. A short detective story about almost blaming the wrong layer.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">rust</span>
+      <span class="mk-tag">wgsl</span>
+      <span class="mk-tag">spir-v</span>
+      <span class="mk-tag">vulkan</span>
+      <span class="mk-tag mk-tag--accent">root-cause</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://github.com/gfx-rs/wgpu/pull/9674">the fix (wgpu PR) →</a>
+      <a class="mk-btn mk-btn--ghost" href="https://github.com/mstampfli/wgsl-mod-repro">reproducer</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">date</span><span class="proj-spec__v">2026-06-14</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">stack</span><span class="proj-spec__v">wgpu / naga</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">surfaced on</span><span class="proj-spec__v">rtx 5060</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">verdict</span><span class="proj-spec__v">toolchain bug</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">found via</span><span class="proj-spec__v">voxelg</span></div>
+  </section>
+
+  <div class="proj-prose reveal" style="max-width: 74ch;">
+
+    <div class="mk-alert proj-section">
+      <span class="mk-alert__tag">[ tl;dr ]</span>
+      <div class="mk-alert__body">
+        <p>WGSL guarantees <code>-1 % 768 == -1</code>, yet a WebGPU shader on NVIDIA returns
+        <code>255</code>. naga lowers signed <code>%</code> to SPIR-V <code>OpSRem</code>, and in the Vulkan
+        environment <code>OpSRem</code> with a negative operand is <strong>poison</strong> (undefined)
+        unless <code>VK_KHR_maintenance8</code> is enabled, which the toolchain never requests. So NVIDIA is
+        conformant; the bug is that the shader toolchain emits undefined-behaviour SPIR-V for a value WGSL
+        fully defines. Fix: lower <code>%</code> as <code>a - b * (a / b)</code>.</p>
+      </div>
+    </div>
+
+    <div class="proj-section">
+      <h2>how i ran into it</h2>
+      <p>My voxel engine stores the world in a wrap-around slot grid: the world coordinate is mapped into
+      fixed storage with a positive modulo, <code>pos_mod(world_voxel, N)</code>. Near spawn, perfect. Fly
+      into <em>negative</em> world coordinates and the GPU drew the wrong chunk's terrain, geometry that
+      wasn't really there and that the CPU raycast (correct Rust <code>rem_euclid</code>) never agreed
+      existed. Every CPU unit test passed. The bug lived only on the GPU, only for negative inputs.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>the fingerprint</h2>
+      <p><code>-1 % 768</code> came back as <code>255</code>, and <code>(-1 as u32) % 768 == 255</code>
+      exactly. Every wrong result matched <code>(a as u32) % b</code>: the negative dividend was being
+      treated as unsigned. That number was not noise; it named the mechanism.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>isolating the layer</h2>
+      <p>A WGSL <code>%</code> flows <code>WGSL --naga--&gt; SPIR-V --driver--&gt; machine code</code>. naga
+      translates to SPIR-V once, device-independently, so every driver gets the same bytes. I ran the
+      identical shader (runtime operands, nothing const-folded) on every Vulkan device on the machine:</p>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>cross-driver differential (no maintenance8)</div>
+<pre><code>inputs              : [-1, -5, -768, -769, -1000, 0, 5, 768, 1000]
+spec-correct  a%b   : [-1, -5,    0,   -1,  -232, 0, 5,   0,  232]
+
+NVIDIA RTX 5060     : [255, 251, 256, 255, 24, ...]   <span class="boot-warn">WRONG</span>
+Intel Mesa (ANV)    : [-1, -5, 0, -1, -232, ...]      <span class="boot-ok">correct</span>
+llvmpipe (software) : [-1, -5, 0, -1, -232, ...]      <span class="boot-ok">correct</span></code></pre>
+      </div>
+      <p>Same SPIR-V, only NVIDIA wrong. Dumping the bytes confirmed naga emits <code>OpSRem</code>, the
+      signed remainder opcode, which is the right choice for WGSL <code>%</code>. So: not my code, not naga's
+      opcode choice. Open and shut, an NVIDIA driver bug. Right?</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>the twist</h2>
+      <p>Before reporting it, I checked whether the Vulkan spec actually <em>requires</em> the correct
+      result. It doesn't, not by default. From the SPIR-V environment appendix:</p>
+      <div class="mk-alert">
+        <span class="mk-alert__tag">[ vulkan spec ]</span>
+        <div class="mk-alert__body">
+          <p>"If the maintenance8 feature is not enabled and if either operand to OpSRem and OpSMod
+          instructions is negative the result is <strong>poison</strong>."</p>
+        </div>
+      </div>
+      <p><code>OpSRem</code> on a negative operand is undefined in base Vulkan; the extension
+      <code>VK_KHR_maintenance8</code> is what makes it well-defined. So NVIDIA returning garbage without
+      that extension is legal. The "obvious driver bug" wasn't one, until proven otherwise.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>the decider</h2>
+      <p>I wrote a raw-Vulkan reproducer that runs the shader on the same NVIDIA device twice, without and
+      with <code>VK_KHR_maintenance8</code> enabled:</p>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>maintenance8 A/B on the same device</div>
+<pre><code>NVIDIA a%b  (maintenance8 OFF): [255, 251, 256, ...]   <span class="boot-warn">WRONG</span>   (legal poison)
+NVIDIA a%b  (maintenance8 ON ): [-1, -5, 0, ...]       <span class="boot-ok">CORRECT</span></code></pre>
+      </div>
+      <p>That settles it. Ask for defined semantics and NVIDIA is correct. NVIDIA is conformant. The bug is
+      upstream: naga emits <code>OpSRem</code> without enabling maintenance8 and without guarding negatives,
+      producing SPIR-V whose result is poison for the exact inputs WGSL says must yield a specific value.
+      Mesa's drivers happen to define the behaviour; NVIDIA takes the latitude the spec grants.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>the fix</h2>
+      <p><code>OpSDiv</code> is not in the poison clause (and NVIDIA computes <code>/</code> correctly without
+      maintenance8), so signed <code>%</code> can be reconstructed poison-free:</p>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>wgsl</div>
+<pre><code>let r = a - b * (a / b);   <span class="tok-c">// == a % b; correct on NVIDIA, no extension needed</span></code></pre>
+      </div>
+      <p>naga already has a wrapper function for signed <code>%</code> and <code>/</code> (it guards
+      divide-by-zero and <code>INT_MIN % -1</code> to match WGSL). That wrapper is the natural place to emit
+      the reconstruction instead of <code>OpSRem</code>, a small driver-gated change. It is now a
+      <a href="https://github.com/gfx-rs/wgpu/pull/9674">pull request to wgpu</a>, plus a
+      <a href="https://github.com/gpuweb/cts/pull/4665">negative-dividend test for the WebGPU CTS</a> so the
+      class of bug gets caught going forward.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>why the twist matters</h2>
+      <p>The first three steps "proved" it was NVIDIA. They were good evidence and completely misleading
+      about <em>fault</em>. The lesson isn't "test on the GPU" (though do that). It's this: before you file a
+      bug against an implementation, check whether the spec actually <em>requires</em> the behaviour you
+      expected. SPIR-V core mandates the sign of <code>OpSRem</code>; the Vulkan environment relaxes it to
+      poison, and the environment is what your app is held to. One sentence in an appendix moved this from
+      "NVIDIA driver bug" to "toolchain emits undefined-behaviour SPIR-V", a different bug with a different
+      owner and a different fix.</p>
+      <ul class="proj-feats">
+        <li><strong>The fingerprint is data.</strong> <code>(-1 as u32) % 768 == 255</code> named the mechanism immediately.</li>
+        <li><strong>A cross-driver differential isolates the layer, not the fault.</strong> Two drivers agreeing and one disagreeing on identical bytes tells you <em>where</em> they differ, not <em>who</em> is wrong.</li>
+        <li><strong>Undefined behaviour makes "wrong" legal.</strong> Check the spec's requirements, not just its definitions.</li>
+      </ul>
+    </div>
+
+    <div class="proj-section">
+      <h2>reproducer</h2>
+      <p>Standalone, runs on any machine with Vulkan: a cross-driver differential, a SPIR-V opcode dump
+      showing naga emits <code>OpSRem</code>, and the raw-Vulkan maintenance8 A/B that settles it.</p>
+      <div class="mk-row proj-hero__actions">
+        <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/wgsl-mod-repro">github.com/mstampfli/wgsl-mod-repro →</a>
+      </div>
+    </div>
+
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">this post</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/gfx-rs/wgpu/pull/9674">wgpu fix</a>
+        <a href="https://github.com/mstampfli/wgsl-mod-repro">reproducer</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:marc@mstampfli.com">marc@mstampfli.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>
