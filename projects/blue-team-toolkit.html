@@ -6,7 +6,7 @@
   <title>blue-team-toolkit · mstampfli</title>
   <meta name="description" content="Blue Team Toolkit: a menu-driven defensive-security toolkit for assessing, hardening, and monitoring Windows and Linux hosts, PowerShell + bash, for authorized use only.">
   <meta property="og:title" content="blue-team-toolkit, defensive security tooling">
-  <meta property="og:description" content="Menu-driven Windows + Linux defense: install → map → recommend → harden → triage → hunt. CCDC-style prep, authorized use only.">
+  <meta property="og:description" content="Menu-driven Windows + Linux defense: install, map, recommend, harden, triage, hunt, then a graded A-F report card. Authorized use only.">
   <meta property="og:url" content="https://mstampfli.com/projects/blue-team-toolkit.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -42,9 +42,9 @@
     <span class="mk-kicker">projects / blue-team-toolkit</span>
     <h1>blue-team-toolkit</h1>
     <p class="proj-hero__lede mk-muted">A menu-driven defensive-security toolkit for rapidly assessing,
-    hardening, and monitoring Windows and Linux hosts under time pressure. One workflow wraps a curated set
-    of well-known DFIR, hardening, and recon tools: install → map → recommend → harden → triage → hunt, 
-    built for CCDC-style competition prep and lab use.</p>
+    hardening, and monitoring Windows and Linux hosts. One workflow wraps a curated set of well-known DFIR,
+    hardening, and recon tools, install → map → recommend → harden → triage → hunt, and rolls the result
+    into a single graded security report card. For authorized use only.</p>
     <div class="mk-row proj-hero__meta">
       <span class="mk-tag">powershell</span>
       <span class="mk-tag">bash</span>
@@ -73,27 +73,26 @@
         have to know what it is, what it exposes, and what already looks wrong, so the toolkit
         wraps that whole loop behind a single menu. Each platform has its own entry point, but
         the Windows and Linux sides mirror each other in structure and output format, so the same
-        workflow carries across the room under time pressure.</p>
+        workflow carries across both.</p>
       </div>
 
       <div class="mk-alert proj-section">
         <span class="mk-alert__tag">[ scope ]</span>
         <div class="mk-alert__body">
-          <p>This is <strong>defensive (blue team) tooling intended for authorized use only</strong>, 
-          Collegiate Cyber Defense Competition (CCDC) style exercises, lab environments, and systems
-          you own or are explicitly cleared to defend. Some bundled tools (nmap, NetExec, nuclei,
-          LinPEAS/WinPEAS, SharpHound) are dual-use; run them only against in-scope assets.</p>
+          <p>This is <strong>defensive (blue team) tooling intended for authorized use only</strong>:
+          systems you own, or are explicitly cleared to assess and defend (production hardening, lab work,
+          CTFs, incident response). Some bundled tools (nmap, NetExec, nuclei, LinPEAS/WinPEAS, SharpHound)
+          are dual-use; run them only against in-scope assets.</p>
         </div>
       </div>
 
       <div class="proj-section">
-        <h2>scope</h2>
-        <p>The menus and inline comments reference competition workflow, "battle plan" sections and a
-        "CyLG kill chain", because that is the context it was built for. Two entry points launch identical
-        menu structures: <code>prep.ps1</code> (Windows console menu) and <code>prep.sh</code> (Linux
-        whiptail menu). Both create an <code>output/</code> tree (reports, logs, <code>findings.jsonl</code>,
-        <code>facts.json</code>) and a <code>tools/</code> directory next to the script; per-platform logic
-        lives in <code>lib/windows/*.ps1</code> and <code>lib/linux/*.sh</code>.</p>
+        <h2>structure</h2>
+        <p>Two entry points launch identical menu structures: <code>prep.ps1</code> (Windows console menu)
+        and <code>prep.sh</code> (Linux whiptail menu). Both create an <code>output/</code> tree (reports,
+        logs, <code>findings.jsonl</code>, <code>facts.json</code>) and a <code>tools/</code> directory next
+        to the script; per-platform logic lives in <code>lib/windows/*.ps1</code> and
+        <code>lib/linux/*.sh</code>, kept at feature parity.</p>
       </div>
 
       <div class="proj-section">
@@ -109,12 +108,16 @@
           <li><strong>recommend</strong>, reads <code>facts.json</code> and prints a prioritized
           P0/P1/P2 hardening punch list with the matching hardening step, plus tools present vs. missing.</li>
           <li><strong>harden</strong>, a semi-automated checklist, <strong>dry-run by default</strong>,
-          with per-step confirmation and a rollback hint for every change.</li>
+          with per-step confirmation, a real file backup before each edit, and a rollback hint for every
+          change; steps that remove functionality are gated and labeled.</li>
           <li><strong>triage</strong>, per-host raw-state collection to a timestamped report; dispatches
           installed scanners first, then dumps processes, sockets, persistence, accounts, and live state.</li>
           <li><strong>hunt</strong>, a backdoor/persistence hunt that dispatches available hunters
-          (autoruns/chainsaw/hayabusa/hollows_hunter/loki), then runs high-specificity "CLEAR" checks and
-          drift against the saved baseline.</li>
+          (autoruns/chainsaw/hayabusa/hollows_hunter/loki), then runs high-specificity "CLEAR" checks,
+          separates noisier "REVIEW" exposure checks, and compares against the saved baseline.</li>
+          <li><strong>report card</strong>, rolls <code>facts.json</code> and the accumulated
+          <code>findings.jsonl</code> into one graded report, an A-F posture grade, prioritized issues, and
+          open findings, as a self-contained HTML page plus Markdown.</li>
         </ul>
       </div>
 
@@ -141,34 +144,37 @@
           DNS enum, and NAT-hairpin nmap, into an editable <code>recon-targets.txt</code>.</li>
           <li><strong>findings</strong>, a viewer for the persistent <code>findings.jsonl</code>
           accumulated across runs; summary, recent, by-type, and deduped CSV export.</li>
+          <li><strong>report card</strong>, aggregates the map facts and accumulated findings into an A-F
+          graded HTML + Markdown report, the one-glance view of where the host stands.</li>
         </ul>
       </div>
 
       <div class="mk-alert mk-alert--warn proj-section">
         <span class="mk-alert__tag">[ status ]</span>
         <div class="mk-alert__body">
-          <p>Single-author project built for CCDC-style competition prep and lab use; the Windows and Linux
-          sides are at feature parity. No automated tests, review the hardening dry-run output before
-          applying changes to any host you care about, and run the dual-use tools only against in-scope assets.</p>
+          <p>Single-author project; the Windows and Linux sides are at feature parity. No automated tests.
+          The hardening module is dry-run by default and backs up every file it touches, but review its
+          output before applying changes to any host you care about, and run the dual-use tools only against
+          in-scope assets.</p>
         </div>
       </div>
     </div>
 
     <aside class="proj-aside reveal">
       <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>prep.sh · map → punch list</div>
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>prep.sh · map → report card</div>
         <pre><code><span class="tok-p">$ </span><span class="tok-k">./prep.sh</span>
-<span class="tok-c"># whiptail menu: suggested order is</span>
-<span class="tok-c"># 1 install → 6 map → 7 recommend</span>
-<span class="tok-c"># → 3 harden → 2/4 triage/hunt</span>
+<span class="tok-c"># menu in workflow order:</span>
+<span class="tok-c"># 1 install · 2 map · 3 recommend</span>
+<span class="tok-c"># 4 harden · 5/6 triage/hunt · 9 report</span>
 <span class="boot-ok">[ ok ]</span> deps: whiptail · jq · curl
-<span class="boot-ok">[ ok ]</span> 6 map → output/facts.json
-<span class="boot-ok">[ ok ]</span> 7 recommend → punch list
+<span class="boot-ok">[ ok ]</span> 2 map → output/facts.json
+<span class="boot-ok">[ ok ]</span> 3 recommend → punch list
 
 <span class="tok-c"># P0  SMBv1 enabled → disable</span>
 <span class="tok-c"># P1  SSH password auth → lockdown</span>
 <span class="tok-c"># P2  no UFW default-deny → set</span>
-maka<span class="tok-p">$</span> <span class="tok-k">3</span>  <span class="tok-c"># harden (dry-run by default)</span></code></pre>
+maka<span class="tok-p">$</span> <span class="tok-k">9</span>  <span class="tok-c"># report card → grade B, report.html</span></code></pre>
       </div>
 
       <div class="mk-code">
