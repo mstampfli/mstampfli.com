@@ -215,6 +215,8 @@
 @media (max-width: 720px) {
   .proj-index-grid { grid-template-columns: minmax(0, 1fr); }
   .proj-index .mk-card__body { align-items: flex-start; }
+  /* when the header wraps to a second row, the status sits left, not floated right */
+  .proj__status { margin-left: 0; }
 }
 
 @media (max-width: 900px) {
