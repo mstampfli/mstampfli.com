@@ -76,8 +76,9 @@
       ranges, so it follows the GHSA/PYSEC/RUSTSEC aliases for the real packages.) An optional <code>--ai</code>
       flag drafts a concrete detection and repro from the whole enriched context through the Claude CLI, no API key.</p>
     </div>
+  </div>
 
-    <div class="proj-section" id="demo">
+  <div class="proj-section reveal" id="demo">
       <h2>live demo</h2>
       <p>Type a CVE id. This runs entirely in your browser against OSV, EPSS, and nuclei-templates, showing the
       EPSS exploitation probability, the affected packages, and the <strong>real community Nuclei detection</strong>
@@ -90,8 +91,9 @@
         <button id="cve-run" class="mk-btn mk-btn--primary">generate →</button>
       </div>
       <div id="demo-out" class="mk-muted">Results appear here.</div>
-    </div>
+  </div>
 
+  <div class="proj-prose reveal" style="max-width: 74ch;">
     <div class="proj-section">
       <h2>what the full CLI adds</h2>
       <ul class="proj-feats">
@@ -144,7 +146,7 @@ python3 cve2detect.py CVE-2021-23337 --ai</code></pre>
   </div>
 </footer>
 
-<script src="cve2detect-demo.js?v=5" defer></script>
+<script src="cve2detect-demo.js?v=6" defer></script>
 <script src="../site.js"></script>
 </body>
 </html>

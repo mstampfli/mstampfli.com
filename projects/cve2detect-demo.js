@@ -103,6 +103,8 @@ function versionChecks(rec) {
 function codeBlock(label, text) {
   const wrap = document.createElement("div");
   wrap.className = "mk-code";
+  wrap.style.width = "fit-content";   // shrink to the longest line...
+  wrap.style.maxWidth = "100%";       // ...but never wider than the column (then scroll)
   const bar = document.createElement("div");
   bar.className = "mk-code__bar";
   const dot = document.createElement("span");
