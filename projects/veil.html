@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>veil · mstampfli</title>
-  <meta name="description" content="Veil: per-app network isolation. Route any single app through a chain of WireGuard, OpenVPN, Tor, SOCKS5 and HTTP hops in its own Linux network namespace, with a verified, fail-closed kill switch, a CLI and a GTK GUI. Open-core: a free engine plus a Pro anti-detect edition (WIP).">
-  <meta property="og:title" content="veil, per-app network isolation">
-  <meta property="og:description" content="Route one app through a WireGuard/OpenVPN/Tor/SOCKS5/HTTP chain in its own Linux netns, with a kill switch it verifies instead of assumes. Open-core: free engine on GitHub, plus a Pro opsec edition. Written in Go. WIP.">
+  <meta name="description" content="Veil is a per-application network isolation engine: confine any process to its own Linux network namespace and route it through a composable WireGuard / OpenVPN / Tor / SOCKS5 / HTTP chain, behind a verified, fail-closed kill switch. Open-core: Veil Core (free, open source) plus Veil Pro (anti-detect and opsec stack).">
+  <meta property="og:title" content="veil, per-application network isolation">
+  <meta property="og:description" content="Confine one app to its own Linux netns and route it through a composable WireGuard/OpenVPN/Tor/SOCKS5/HTTP chain, behind a verified kill switch. Open-core: Veil Core (free) plus Veil Pro (anti-detect / opsec). Written in Go.">
   <meta property="og:url" content="https://mstampfli.com/projects/veil.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -41,18 +41,18 @@
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / veil</span>
     <h1>veil</h1>
-    <p class="proj-hero__lede mk-muted">Most "route this through a VPN" setups are all-or-nothing and leak by
-    default: every app shares one exit, and one chatty process can deanonymize the rest. Veil puts a single
-    application inside its own Linux network namespace and forces every packet it sends through a chain you
-    compose (WireGuard, OpenVPN, Tor, SOCKS5, HTTP), with a kill switch it verifies instead of assumes.
-    Written in Go, with a CLI and a GTK GUI.</p>
+    <p class="proj-hero__lede mk-muted">A per-application network isolation engine. Veil confines any single
+    process to its own Linux network namespace and routes its traffic through a composable chain of WireGuard,
+    OpenVPN, Tor, SOCKS5 and HTTP hops, behind a kill switch that is verified, not assumed. One application,
+    one exit path, with the rest of the host untouched. Written in Go, with a command-line interface and a
+    desktop application.</p>
     <div class="mk-row proj-hero__meta">
       <span class="mk-tag">go</span>
       <span class="mk-tag">linux netns</span>
       <span class="mk-tag">wireguard</span>
       <span class="mk-tag">tor</span>
       <span class="mk-tag">open-core</span>
-      <span class="mk-tag mk-tag--warn">WIP</span>
+      <span class="mk-tag mk-tag--warn">early access</span>
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/veil">source →</a>
@@ -61,72 +61,56 @@
   </header>
 
   <section class="proj-specs reveal">
-    <div class="proj-spec"><span class="proj-spec__k">lang</span><span class="proj-spec__v">go</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">language</span><span class="proj-spec__v">go</span></div>
     <div class="proj-spec"><span class="proj-spec__k">isolation</span><span class="proj-spec__v">linux netns + veth</span></div>
-    <div class="proj-spec"><span class="proj-spec__k">chain</span><span class="proj-spec__v">wg / ovpn / tor / socks5 / http</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">backends</span><span class="proj-spec__v">wg / ovpn / tor / socks5 / http</span></div>
     <div class="proj-spec"><span class="proj-spec__k">kill switch</span><span class="proj-spec__v">verified, fail-closed</span></div>
-    <div class="proj-spec"><span class="proj-spec__k">ui</span><span class="proj-spec__v">cli + gtk gui</span></div>
-    <div class="proj-spec"><span class="proj-spec__k">model</span><span class="proj-spec__v">open core (free + pro)</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">interfaces</span><span class="proj-spec__v">cli + gtk desktop</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">model</span><span class="proj-spec__v">open core</span></div>
   </section>
 
   <div class="proj-body">
     <div class="proj-prose reveal">
       <div class="proj-section">
-        <h2>the idea</h2>
-        <p>A normal VPN routes the whole host: every app shares one exit, and one misbehaving
-        program can deanonymize everything else on the link. Veil flips that around. You give a
-        single app its own network namespace and define exactly how its traffic leaves the machine,
-        independent of whatever the rest of the host is doing.</p>
+        <h2>The problem</h2>
+        <p>A conventional VPN routes the entire host: every application shares one exit, and a single
+        misbehaving process can deanonymize everything else on the link. Veil inverts that model. You scope
+        the tunnel to one application and define exactly how its traffic leaves the machine, independent of
+        whatever the rest of the host is doing.</p>
       </div>
 
       <div class="proj-section">
-        <h2>isolation</h2>
+        <h2>Isolation</h2>
         <ul class="proj-feats">
-          <li><strong>Per-app network namespace</strong>, each profile spins up a dedicated Linux netns joined to the host by a <code>veth</code> pair. The target app launches inside it.</li>
-          <li><strong>No bare-link path</strong>, the app sees only the tunnel, never the host's real interface or IP address.</li>
-          <li><strong>DNS captured</strong>, name resolution is forced through the tunnel too, so there is no plaintext resolver leak around the side.</li>
+          <li><strong>Per-application namespace</strong>, each profile launches its target process inside a dedicated Linux network namespace joined to the host by a <code>veth</code> pair.</li>
+          <li><strong>No bare-link path</strong>, the process sees only the tunnel, never the host's physical interface or real IP address.</li>
+          <li><strong>DNS confinement</strong>, name resolution is forced through the tunnel, eliminating the plaintext resolver leak that defeats most setups.</li>
         </ul>
       </div>
 
       <div class="proj-section">
-        <h2>the chain</h2>
-        <p>Exits are composed, not single. Stack hops in series, in any order, for real multi-hop:</p>
+        <h2>Composable routing</h2>
         <ul class="proj-feats">
           <li><strong>Backends</strong>, WireGuard, OpenVPN, the Tor network, and SOCKS5 / HTTP proxies.</li>
-          <li><strong>Multi-hop</strong>, for example <code>host → WireGuard → Tor → app</code>, so the WireGuard provider never sees Tor and Tor never sees your home IP.</li>
-          <li><strong>Per-profile</strong>, every profile carries its own chain, so two apps can leave the machine through completely different paths at the same time.</li>
+          <li><strong>Multi-hop</strong>, chain hops in series in any order, for example <code>host → WireGuard → Tor → app</code>, so no single provider sees both ends of the path.</li>
+          <li><strong>Per-profile</strong>, each profile carries its own chain, so several applications can leave the machine through entirely separate paths at the same time.</li>
         </ul>
       </div>
 
       <div class="proj-section">
-        <h2>a kill switch you can trust</h2>
-        <p>Most kill switches add a firewall rule and hope. Veil <em>verifies</em>: before it hands the
-        namespace to your app it actively checks there is no route to the internet except through the
-        tunnel, and if the tunnel drops it fails closed. The app loses connectivity rather than spilling
-        onto the bare link.</p>
+        <h2>Verified kill switch</h2>
+        <p>Most kill switches install a firewall rule and trust it. Veil verifies: before the namespace is
+        handed to the application it actively confirms there is no route to the internet except through the
+        tunnel, and if the tunnel drops it fails closed. The application loses connectivity rather than
+        leaking onto the open link.</p>
       </div>
 
       <div class="proj-section">
-        <h2>open core</h2>
-        <p>The free edition is the full isolation engine, open source on GitHub: chains, the verified
-        kill switch, profiles, the CLI and the GUI. A <strong>Pro</strong> edition adds an anti-detect /
-        opsec stack for security research, and it is a drop-in, the same <code>veil</code> binary gated
-        by a signed offline license:</p>
-        <ul class="proj-feats">
-          <li><strong>Personas</strong>, per-profile browser identities and a forge that generates unique ones.</li>
-          <li><strong>Fingerprint shaping</strong>, TCP, TLS and HTTP/2 characteristics aligned to the persona.</li>
-          <li><strong>Pinned exits</strong>, lock a profile to a chosen exit endpoint, with launch-window and behavioral controls.</li>
-        </ul>
-      </div>
-
-      <div class="mk-alert mk-alert--warn proj-section">
-        <span class="mk-alert__tag">[ status ]</span>
-        <div class="mk-alert__body">
-          <p><strong>Work in progress, Linux-first.</strong> The free engine builds and runs, isolation,
-          chains and the verified kill switch work; the Pro edition and its signed update channel are still
-          being finished. A real but learning-grade tool, not a polished product release yet. For
-          authorized, lawful privacy and security-research use only.</p>
-        </div>
+        <h2>Built for</h2>
+        <p>Privacy-critical workflows and authorized security research: red-team operations,
+        threat-intelligence collection, malware-analysis sandboxing, and compartmentalized browsing.
+        Per-application isolation means one identity can never bleed into another. For lawful, authorized
+        use only.</p>
       </div>
     </div>
 
@@ -157,17 +141,69 @@ internal/
   chain/        <span class="tok-c"># multi-hop</span>
   updater/      <span class="tok-c"># signed update</span></code></pre>
       </div>
+    </aside>
+  </div>
 
-      <div class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">editions</h3></div>
+  <section class="proj-section reveal">
+    <h2>Editions</h2>
+    <p class="mk-muted">Veil is open-core. The complete isolation engine is free and open source; the
+    anti-detect and operational-security stack is a commercial, drop-in upgrade, the same binary unlocked
+    by a signed offline license, with no migration and no separate install.</p>
+    <div class="proj-index-grid">
+
+      <article class="mk-card">
+        <div class="mk-card__header">
+          <h3 class="mk-card__title">Veil Core</h3>
+          <span class="mk-tag mk-tag--success">free</span><span class="mk-tag">open source</span>
+        </div>
         <div class="mk-card__body">
+          <p>The complete network-isolation engine. No account, no profile limits, no telemetry.</p>
           <ul class="proj-feats">
-            <li><strong>free</strong>, isolation engine, chains, verified kill switch, CLI + GUI. Open source.</li>
-            <li><strong>pro</strong>, anti-detect stack: personas, fingerprint shaping, pinned exits. Licensed, drop-in.</li>
+            <li>Per-application Linux network-namespace isolation</li>
+            <li>Composable chains: WireGuard, OpenVPN, Tor, SOCKS5, HTTP</li>
+            <li>Multi-hop routing, unlimited profiles</li>
+            <li>Verified, fail-closed kill switch</li>
+            <li>DNS leak prevention inside the namespace</li>
+            <li>Command-line interface and GTK desktop application</li>
           </ul>
         </div>
-      </div>
-    </aside>
+        <div class="mk-card__footer">
+          <a href="https://github.com/mstampfli/veil">source →</a>
+        </div>
+      </article>
+
+      <article class="mk-card">
+        <div class="mk-card__header">
+          <h3 class="mk-card__title">Veil Pro</h3>
+          <span class="mk-tag mk-tag--accent">commercial</span><span class="mk-tag">anti-detect</span>
+        </div>
+        <div class="mk-card__body">
+          <p>Everything in Core, plus the anti-detect and operational-security stack for high-assurance research.</p>
+          <ul class="proj-feats">
+            <li>Per-profile browser personas, with a forge for unique identities</li>
+            <li>TCP, TLS and HTTP/2 fingerprint shaping aligned to the persona</li>
+            <li>Locked exit endpoints, pin a profile to an IP, city or ASN</li>
+            <li>Launch-window scheduling, behavioral jitter, CPU throttling</li>
+            <li>TLS-inspecting proxy with a managed certificate authority</li>
+            <li>Tor circuit control, including exit country and bridges</li>
+            <li>Signed offline licensing and a private, authenticated update channel</li>
+          </ul>
+        </div>
+        <div class="mk-card__footer">
+          <a href="mailto:marc@mstampfli.com?subject=Veil%20Pro%20early%20access">request early access →</a>
+        </div>
+      </article>
+
+    </div>
+  </section>
+
+  <div class="mk-alert mk-alert--warn proj-section reveal">
+    <span class="mk-alert__tag">[ status ]</span>
+    <div class="mk-alert__body">
+      <p><strong>Active development, Linux-first.</strong> Veil Core is open source and functional today;
+      Veil Pro and its licensed update channel are in early access. Built and tested on Linux, with Windows
+      and macOS builds in progress.</p>
+    </div>
   </div>
 
 </main>
