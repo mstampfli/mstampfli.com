@@ -18,6 +18,17 @@ async function getJSON(url) {
   return r.json();
 }
 
+async function nucleiTemplate(cve) {
+  const year = cve.split("-")[1];
+  for (const path of [`http/cves/${year}/${cve}.yaml`, `cves/${year}/${cve}.yaml`]) {
+    try {
+      const r = await fetch(`https://raw.githubusercontent.com/projectdiscovery/nuclei-templates/main/${path}`);
+      if (r.ok) return path;
+    } catch (e) { /* ignore */ }
+  }
+  return null;
+}
+
 async function fetchCVE(cve) {
   const osv = await getJSON(`https://api.osv.dev/v1/vulns/${cve}`);
   const rec = { id: cve, summary: osv.summary || "", references: (osv.references || []).map((r) => r.url), affected: [] };
@@ -133,6 +144,21 @@ async function run() {
       b.textContent = `EPSS: ${(rec.epss.score * 100).toFixed(1)}% exploitation probability (${(rec.epss.pct * 100).toFixed(0)}th percentile)`;
       t.appendChild(b);
       out.appendChild(t);
+    }
+
+    const ntpath = await nucleiTemplate(raw);
+    if (ntpath) {
+      const p = document.createElement("p");
+      const b = document.createElement("strong");
+      b.textContent = "Real Nuclei detection available: ";
+      const a = document.createElement("a");
+      a.href = `https://github.com/projectdiscovery/nuclei-templates/blob/main/${ntpath}`;
+      a.textContent = ntpath;
+      a.target = "_blank";
+      a.rel = "noopener";
+      p.appendChild(b);
+      p.appendChild(a);
+      out.appendChild(p);
     }
 
     const sum = document.createElement("p");
