@@ -92,7 +92,8 @@
           <li><strong>Userspace</strong>, ELF64 loader, <code>syscall</code>/<code>sysret</code> fast path, per-process kernel stacks via the TSS, real TLS (<code>%fs</code>), futexes, and kernel-owned thread join, enough to run pthreads-heavy programs.</li>
           <li><strong>~118 syscalls</strong>, Linux-style <code>-errno</code> returns: POSIX signals, <code>pipe</code>, <code>dup</code>/<code>fcntl</code>, <code>epoll</code>/<code>eventfd</code>/<code>timerfd</code>/<code>signalfd</code>, <code>io_uring</code>, and Unix-domain sockets with <code>SCM_RIGHTS</code>.</li>
           <li><strong>Drivers</strong>, PCI, IRQ-driven AHCI, NVMe, virtio-gpu (DRM/KMS), virtio-net, virtio-input (absolute tablet), Intel HD Audio, and PS/2 keyboard + mouse.</li>
-          <li><strong>Networking & FS</strong>, an ARP / IPv4 / UDP / TCP stack over virtio-net, and ext2 <em>read and write</em> behind a small VFS with pollable <code>/dev</code> character devices.</li>
+          <li><strong>Networking & FS</strong>, an ARP / IPv4 / UDP / TCP stack over virtio-net, and ext2 <em>read and write</em> plus FAT32 behind a small VFS with pollable <code>/dev</code> character devices.</li>
+          <li><strong>Security</strong>, OpenBSD-style <code>pledge</code> / <code>unveil</code> capability sandboxing (per-process syscall and filesystem-path restriction), plus credentials and ACLs, enforced in-kernel.</li>
         </ul>
       </div>
 
@@ -100,7 +101,7 @@
         <h2>userland</h2>
         <ul class="proj-feats">
           <li><strong>libc from scratch</strong> (System V AMD64 ABI) with TLS, pthreads, and a <code>__thread errno</code>; <strong>bash 5.2</strong> runs as <code>/bin/sh</code>.</li>
-          <li><strong>A POSIX conformance suite</strong> (<code>test_posix1</code>, 156 assertions) plus assorted apps, including a <strong>DOOM</strong> port.</li>
+          <li><strong>A POSIX conformance suite</strong> (<code>test_posix1</code>, 142 assertions) plus assorted apps, including a <strong>DOOM</strong> port.</li>
         </ul>
       </div>
 
@@ -138,7 +139,7 @@
 <span class="boot-warn">[ wip ]</span> sway: compositor up, stabilizing
 
 maka<span class="tok-p">$</span> <span class="tok-k">./test_posix1</span>
-<span class="boot-ok">[ ok ]</span> posix suite: 156 assertions</code></pre>
+<span class="boot-ok">[ ok ]</span> posix suite: 142 assertions</code></pre>
       </div>
 
       <div class="mk-code">
