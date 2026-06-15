@@ -55,13 +55,14 @@
     <article class="mk-card proj proj-index">
       <div class="mk-card__header">
         <h3 class="mk-card__title">01 · makaos</h3>
-        <span class="mk-tag">c</span><span class="mk-tag">nasm</span>
-        <span class="mk-tag mk-tag--success proj__status">146/146 tests</span>
+        <span class="mk-tag">c</span><span class="mk-tag">x86-64</span>
+        <span class="mk-tag mk-tag--warn proj__status">desktop · WIP</span>
       </div>
       <div class="mk-card__body">
-        <p>A 64-bit operating system for x86-64, from the boot sector up: two-stage NASM bootloader,
-        C kernel with preemptive scheduling and demand-paged memory, AHCI storage, ext2 read/write,
-        and ring-3 userspace speaking 29 Linux-style syscalls. A Wayland desktop is in progress.</p>
+        <p>A 64-bit OS for x86-64, from the UEFI handoff up: a 4-way SMP kernel with demand-paged
+        memory, AHCI/NVMe storage, a TCP/IP stack, ext2 read/write, and a ring-3 userland speaking
+        ~118 Linux-style syscalls that runs bash and DOOM. A ported sway/wlroots desktop is landing
+        now and still being stabilized.</p>
       </div>
       <div class="mk-card__footer">
         <a href="https://github.com/mstampfli/makaos">source →</a>

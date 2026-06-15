@@ -79,24 +79,24 @@ marc · builds from zero.</code></pre>
       <article class="mk-card proj proj--featured reveal">
         <div class="mk-card__header">
           <h3 class="mk-card__title">01 · makaos</h3>
-          <span class="mk-tag">c</span><span class="mk-tag">nasm</span>
-          <span class="mk-tag mk-tag--success proj__status">146/146 tests</span>
+          <span class="mk-tag">c</span><span class="mk-tag">x86-64</span>
+          <span class="mk-tag mk-tag--warn proj__status">desktop · WIP</span>
         </div>
         <div class="mk-card__body proj--featured__body">
           <div>
-            <p>A 64-bit operating system for x86-64, from the boot sector up: two-stage
-            NASM bootloader, C kernel with preemptive scheduling, demand-paged virtual
-            memory, AHCI storage, ext2 read/write, and ring-3 userspace speaking
-            29 Linux-style syscalls.</p>
-            <p class="mk-muted">Current front: cross-compiled bash, SDL3, and wlroots, 
-            a Wayland desktop, on an OS that started as 512 bytes.</p>
+            <p>A 64-bit operating system for x86-64, from the UEFI handoff up: a 4-way
+            SMP kernel with demand-paged memory, AHCI/NVMe storage, a TCP/IP stack, ext2
+            read/write, and a ring-3 userland speaking ~118 Linux-style syscalls that runs
+            bash and DOOM.</p>
+            <p class="mk-muted">Current front: a ported sway/wlroots Wayland desktop,
+            merged to main and still being stabilized.</p>
           </div>
           <div class="mk-code proj__demo" aria-hidden="true">
-            <pre><code><span class="tok-p">$ </span><span class="tok-k">./build.sh</span> <span class="tok-s">--run</span>
-<span class="tok-c">qemu: bios → boot1 → boot2 → long mode</span>
-<span class="boot-ok">[ ok ]</span> kernel loaded at higher half
+            <pre><code><span class="tok-p">$ </span><span class="tok-k">bash build.sh && ./run.sh</span>
+<span class="tok-c">qemu: uefi/ovmf → BOOTX64.EFI → kernel</span>
+<span class="boot-ok">[ ok ]</span> smp: 4 cpus online
 <span class="boot-ok">[ ok ]</span> ext2 rootfs mounted rw
-<span class="boot-ok">[ ok ]</span> init: ring 3, pid 1
+<span class="boot-ok">[ ok ]</span> init → bash 5.2 as /bin/sh
 maka<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></pre>
           </div>
         </div>

@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>makaos · mstampfli</title>
-  <meta name="description" content="MakaOS: a 64-bit x86-64 operating system written from scratch, NASM bootloader, C kernel, ring-3 userspace, ext2 read/write.">
+  <meta name="description" content="MakaOS: a 64-bit x86-64 operating system written from scratch, UEFI boot, a 4-way SMP kernel, ~118 Linux-style syscalls, a TCP/IP stack, bash, and a ported wlroots/Wayland desktop (work in progress).">
   <meta property="og:title" content="makaos, a 64-bit OS from scratch">
-  <meta property="og:description" content="NASM bootloader, C kernel, 29 POSIX-style syscalls, ext2 read/write, a Wayland desktop in progress.">
+  <meta property="og:description" content="UEFI boot, a 4-way SMP kernel, ~118 syscalls, ext2 read/write, a TCP/IP stack, bash and DOOM, and a sway/wlroots desktop being stabilized. A learning project, still WIP.">
   <meta property="og:url" content="https://mstampfli.com/projects/makaos.html">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -41,14 +41,15 @@
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / makaos</span>
     <h1>makaos</h1>
-    <p class="proj-hero__lede mk-muted">A 64-bit operating system for x86-64, built from scratch:
-    a two-stage NASM bootloader, a C kernel with preemptive scheduling and ring-3 userspace,
-    a small libc, and an ext2 root filesystem, booted and tested in QEMU.</p>
+    <p class="proj-hero__lede mk-muted">A 64-bit operating system for x86-64, built from scratch: a UEFI
+    bootloader, a 4-way SMP kernel with ~118 Linux-style syscalls, a from-scratch libc running bash,
+    a TCP/IP stack over virtio-net, and a ported wlroots/Wayland desktop, all booted and tested in QEMU.</p>
     <div class="mk-row proj-hero__meta">
       <span class="mk-tag">c</span>
-      <span class="mk-tag">nasm</span>
       <span class="mk-tag">x86-64</span>
-      <span class="mk-tag mk-tag--success">146/146 posix tests</span>
+      <span class="mk-tag">smp</span>
+      <span class="mk-tag">wayland</span>
+      <span class="mk-tag mk-tag--warn">desktop · WIP</span>
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/makaos">source →</a>
@@ -57,10 +58,11 @@
   </header>
 
   <section class="proj-specs reveal">
-    <div class="proj-spec"><span class="proj-spec__k">arch</span><span class="proj-spec__v">x86-64</span></div>
-    <div class="proj-spec"><span class="proj-spec__k">boot</span><span class="proj-spec__v">BIOS + UEFI</span></div>
-    <div class="proj-spec"><span class="proj-spec__k">syscalls</span><span class="proj-spec__v">29, linux-style</span></div>
-    <div class="proj-spec"><span class="proj-spec__k">fs</span><span class="proj-spec__v">ext2 r/w · fat32</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">arch</span><span class="proj-spec__v">x86-64 · 4-way smp</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">boot</span><span class="proj-spec__v">uefi / ovmf</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">syscalls</span><span class="proj-spec__v">~118, linux-style</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">net</span><span class="proj-spec__v">arp / ip / udp / tcp</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">fs</span><span class="proj-spec__v">ext2 r/w · vfs</span></div>
     <div class="proj-spec"><span class="proj-spec__k">target</span><span class="proj-spec__v">qemu (tcg/kvm)</span></div>
   </section>
 
@@ -69,82 +71,96 @@
       <div class="proj-section">
         <h2>the idea</h2>
         <p>The fastest way to understand a machine is to write the software that owns it
-        end to end. MakaOS starts at a 512-byte boot sector and climbs all the way up to
-        ring-3 programs making syscalls, no firmware shortcuts, no borrowed kernel.</p>
+        end to end. MakaOS climbs from the UEFI handoff all the way up to a multithreaded
+        ring-3 userland and a Wayland compositor, no firmware shortcuts, no borrowed kernel.</p>
       </div>
 
       <div class="proj-section">
-        <h2>boot chain</h2>
+        <h2>boot</h2>
         <ul class="proj-feats">
-          <li><strong>Stage 1</strong>, 512-byte MBR boot sector, loads stage 2 via INT 13h LBA reads.</li>
-          <li><strong>Stage 2</strong>, collects the E820 memory map and VBE video info, switches real → protected → long mode.</li>
-          <li><strong>Kernel loader</strong>, freestanding C with its own AHCI/ATA driver, early PMM/VMM, higher-half handoff.</li>
-          <li><strong>UEFI path</strong>, a clang-built <code>BOOTX64.EFI</code> on a GPT disk (FAT32 ESP + ext2), on the desktop branch.</li>
+          <li><strong>UEFI / OVMF</strong>, a clang-built COFF <code>BOOTX64.EFI</code> collects the E820 memory map and the GOP framebuffer, installs a higher-half mapping, and hands off to the kernel.</li>
+          <li><strong>Legacy loader</strong>, a freestanding second-stage C loader with its own AHCI/ATA driver and early PMM/VMM is kept in-tree as the BIOS path.</li>
+          <li><strong>Disk</strong>, a GPT image with a FAT32 ESP and an ext2 root, assembled by <code>build.sh</code>.</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>kernel</h2>
         <ul class="proj-feats">
-          <li><strong>Memory</strong>, buddy-allocator PMM from the E820 map, demand-paged VMM with per-process VMAs, higher-half mapping.</li>
-          <li><strong>Scheduling</strong>, preemptive, PIT-driven, processes and kernel threads, context switch in assembly.</li>
-          <li><strong>Userspace</strong>, ELF64 loader, <code>syscall</code>/<code>sysret</code> fast path via STAR/LSTAR MSRs, per-process kernel stacks.</li>
-          <li><strong>29 syscalls</strong>, <code>fork</code>/<code>exec</code>/<code>waitpid</code>, <code>pipe</code>, <code>dup</code>/<code>dup2</code>, signals, <code>brk</code>, full path & directory calls.</li>
-          <li><strong>Storage & FS</strong>, PCI enumeration, IRQ-driven AHCI, ext2 <em>read and write</em> + FAT32 behind a VFS.</li>
-          <li><strong>Shell</strong>, PS/2 keyboard and a VGA text-mode shell: <code>ls</code>, <code>cat</code>, <code>run</code>, <code>edit</code>, <code>ps</code>, …</li>
+          <li><strong>4-way SMP</strong>, per-CPU runqueues, an MLFQ scheduler over a Chase-Lev work-stealing deque, RCU, and lock-minimized hot paths.</li>
+          <li><strong>Memory</strong>, buddy-allocator PMM with per-CPU magazines, a demand-paging VMM with per-process VMAs, copy-on-write <code>fork</code>, and a slab + kernel-heap allocator.</li>
+          <li><strong>Userspace</strong>, ELF64 loader, <code>syscall</code>/<code>sysret</code> fast path, per-process kernel stacks via the TSS, real TLS (<code>%fs</code>), futexes, and kernel-owned thread join, enough to run pthreads-heavy programs.</li>
+          <li><strong>~118 syscalls</strong>, Linux-style <code>-errno</code> returns: POSIX signals, <code>pipe</code>, <code>dup</code>/<code>fcntl</code>, <code>epoll</code>/<code>eventfd</code>/<code>timerfd</code>/<code>signalfd</code>, <code>io_uring</code>, and Unix-domain sockets with <code>SCM_RIGHTS</code>.</li>
+          <li><strong>Drivers</strong>, PCI, IRQ-driven AHCI, NVMe, virtio-gpu (DRM/KMS), virtio-net, virtio-input (absolute tablet), Intel HD Audio, and PS/2 keyboard + mouse.</li>
+          <li><strong>Networking & FS</strong>, an ARP / IPv4 / UDP / TCP stack over virtio-net, and ext2 <em>read and write</em> behind a small VFS with pollable <code>/dev</code> character devices.</li>
         </ul>
       </div>
 
       <div class="proj-section">
-        <h2>where it's going</h2>
-        <p>The <code>desktop</code> branch carries a ports tree, cross-compiled bash, foot, SDL3,
-        libinput, libseat, and wlroots, working toward a Wayland desktop running on an OS
-        that began life as 512 bytes of boot sector.</p>
+        <h2>userland</h2>
+        <ul class="proj-feats">
+          <li><strong>libc from scratch</strong> (System V AMD64 ABI) with TLS, pthreads, and a <code>__thread errno</code>; <strong>bash 5.2</strong> runs as <code>/bin/sh</code>.</li>
+          <li><strong>A POSIX conformance suite</strong> (<code>test_posix1</code>, 156 assertions) plus assorted apps, including a <strong>DOOM</strong> port.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>desktop (the work in progress)</h2>
+        <p>A <strong>wlroots-0.18</strong> stack is cross-compiled and run on the kernel's
+        virtio-gpu/DRM + libinput path: the <strong>sway</strong> compositor, the <strong>foot</strong>
+        terminal, <strong>swaybg</strong> wallpaper, the <strong>tofi</strong> launcher, and
+        <code>wlr-randr</code> for display settings, driven by an absolute virtio-tablet pointer. These
+        are upstream ports, not custom code, and they are the part still being stabilized.</p>
       </div>
 
       <div class="mk-alert mk-alert--warn proj-section">
         <span class="mk-alert__tag">[ status ]</span>
         <div class="mk-alert__body">
-          <p>In active development. <code>main</code> boots reliably under QEMU and passes its
-          POSIX suite, but this is a learning project: single-core, fixed disk layout, no
-          networking yet, UEFI and desktop still stabilizing on side branches.</p>
+          <p><strong>Work in progress, not yet fully stable.</strong> A substantial but unmistakable
+          learning project. It boots under QEMU (TCG and KVM), runs bash and multithreaded userland,
+          brings up the Wayland compositor, and drives real input / audio / network / storage devices.
+          Rough edges remain: the desktop's client-presentation path and a few subsystems are still
+          being hardened, so expect glitches there.</p>
         </div>
       </div>
     </div>
 
     <aside class="proj-aside reveal">
       <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>build.sh · boot</div>
-        <pre><code><span class="tok-p">$ </span><span class="tok-k">./build.sh</span>
-<span class="tok-c"># compile every stage, assemble disk.img,</span>
-<span class="tok-c"># populate /bin, boot in qemu via ahci</span>
-<span class="boot-ok">[ ok ]</span> boot1 → boot2 → loader
-<span class="boot-ok">[ ok ]</span> long mode, higher-half kernel
-<span class="boot-ok">[ ok ]</span> ext2 "MakaOS" mounted rw
-<span class="boot-ok">[ ok ]</span> init: ring 3, pid 1
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>build.sh · run.sh</div>
+        <pre><code><span class="tok-p">$ </span><span class="tok-k">bash build.sh && ./run.sh</span>
+<span class="tok-c"># build the sysroot, assemble the ext2</span>
+<span class="tok-c"># image, boot in qemu via uefi/ovmf</span>
+<span class="boot-ok">[ ok ]</span> BOOTX64.EFI: e820 + gop, higher-half
+<span class="boot-ok">[ ok ]</span> smp: 4 cpus online
+<span class="boot-ok">[ ok ]</span> ext2 root mounted rw
+<span class="boot-ok">[ ok ]</span> init → bash 5.2 as /bin/sh
+<span class="boot-warn">[ wip ]</span> sway: compositor up, stabilizing
 
-maka<span class="tok-p">$</span> <span class="tok-k">run</span> /bin/test_posix1
-<span class="boot-ok">[ ok ]</span> 146/146 assertions</code></pre>
+maka<span class="tok-p">$</span> <span class="tok-k">./test_posix1</span>
+<span class="boot-ok">[ ok ]</span> posix suite: 156 assertions</code></pre>
       </div>
 
       <div class="mk-code">
         <div class="mk-code__bar"><span class="mk-code__dot"></span>tree</div>
-<pre><code>bootloader/   <span class="tok-c"># nasm, real → long</span>
-kernelLoader/ <span class="tok-c"># ahci, early mm</span>
-kernel/       <span class="tok-c"># mm, sched, vfs,</span>
-              <span class="tok-c"># syscalls, drivers</span>
-user/         <span class="tok-c"># libc + ring-3 bins</span>
-build.sh      <span class="tok-c"># bios boot</span>
-build_uefi.sh <span class="tok-c"># uefi/ovmf</span></code></pre>
+<pre><code>boot/         <span class="tok-c"># uefi bootloader</span>
+kernelLoader/ <span class="tok-c"># legacy c loader</span>
+kernel/       <span class="tok-c"># mm, smp sched, vfs,</span>
+              <span class="tok-c"># net, syscalls, drivers</span>
+userland/     <span class="tok-c"># libc, pthreads, bash</span>
+scripts/      <span class="tok-c"># toolchain + ports</span>
+build.sh      <span class="tok-c"># sysroot + image</span>
+run.sh        <span class="tok-c"># boot in qemu</span></code></pre>
       </div>
 
       <div class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">branches</h3></div>
+        <div class="mk-card__header"><h3 class="mk-card__title">desktop stack</h3></div>
         <div class="mk-card__body">
           <ul class="proj-feats">
-            <li><strong>main</strong>, the core OS, stable in QEMU.</li>
-            <li><strong>desktop</strong>, the Wayland ports tree (wlroots & friends).</li>
-            <li><strong>tty-permissions</strong>, TTY line discipline, <code>/dev/tty</code>, kernel permissions.</li>
+            <li><strong>wlroots 0.18</strong> on virtio-gpu/DRM + libinput.</li>
+            <li><strong>sway</strong> compositor, <strong>foot</strong> terminal.</li>
+            <li><strong>swaybg</strong>, <strong>tofi</strong> launcher, <code>wlr-randr</code>.</li>
+            <li>Upstream ports, merged to <code>main</code>, still being stabilized.</li>
           </ul>
         </div>
       </div>
