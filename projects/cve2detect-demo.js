@@ -110,6 +110,8 @@ function codeBlock(label, text) {
   bar.appendChild(dot);
   bar.appendChild(document.createTextNode(label));
   const pre = document.createElement("pre");
+  pre.style.maxHeight = "60vh";   // grow to fit, but cap at 60% of the viewport...
+  pre.style.overflow = "auto";    // ...and scroll inside for long templates
   const code = document.createElement("code");
   code.textContent = text; // textContent: safe, no injection from advisory data
   pre.appendChild(code);
