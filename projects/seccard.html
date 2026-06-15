@@ -73,10 +73,21 @@
         <li><strong>Web hygiene</strong>, <code>security.txt</code> (RFC 9116) and whether the TRACE method is enabled.</li>
         <li><strong>Email and DNS auth</strong>, SPF (with a DNS-lookup budget), DMARC policy and reporting, DKIM, MX, CAA, DNSSEC, MTA-STS, and TLS-RPT, with mail checks skipped when there's no MX.</li>
       </ul>
-      <p>About 28 checks in all, each <code>ok</code>, <code>warn</code>, or <code>FAIL</code>, with the fix
-      printed for anything not green.</p>
-      <p>Each finding is <code>ok</code>, <code>warn</code>, or <code>FAIL</code>, contributes to a 0 to 100
-      score, and rolls up to a letter grade, with the exact fix printed for anything that is not green.</p>
+      <p>About 28 checks in all. Each is <code>ok</code>, <code>warn</code>, or <code>FAIL</code>, contributes
+      to a 0 to 100 score that rolls up to a letter grade, with the exact fix printed for anything not green.</p>
+    </div>
+
+    <div class="proj-section" id="demo">
+      <h2>live demo</h2>
+      <p>Pick a pre-scanned domain to see its real seccard report. (No live arbitrary-domain scanning here:
+      a public "scan any host" endpoint would be an SSRF and abuse backend. seccard is a CLI you run against
+      systems you're allowed to test; these are saved runs.)</p>
+      <div class="mk-row" style="gap: var(--mk-space-2); margin-bottom: var(--mk-space-4); flex-wrap: wrap;">
+        <button class="mk-btn mk-btn--ghost mk-btn--sm" data-domain="mstampfli.com">mstampfli.com</button>
+        <button class="mk-btn mk-btn--ghost mk-btn--sm" data-domain="example.com">example.com</button>
+        <button class="mk-btn mk-btn--ghost mk-btn--sm" data-domain="github.com">github.com</button>
+      </div>
+      <div id="seccard-out" class="mk-muted">Pick a domain.</div>
     </div>
 
     <div class="proj-section">
@@ -166,6 +177,7 @@ python3 seccard.py example.com --json</code></pre>
   </div>
 </footer>
 
+<script src="seccard-demo.js?v=1" defer></script>
 <script src="../site.js"></script>
 </body>
 </html>
