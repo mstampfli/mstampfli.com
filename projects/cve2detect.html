@@ -80,10 +80,11 @@
 
   <div class="proj-section reveal" id="demo">
       <h2>live demo</h2>
-      <p>Type a CVE id. This runs entirely in your browser against OSV, EPSS, and nuclei-templates, showing the
-      EPSS exploitation probability, the affected packages, and the <strong>real community Nuclei detection</strong>
-      (the actual runnable YAML) when one exists, live. Try <code>CVE-2021-44228</code> (Log4Shell) or
-      <code>CVE-2021-23337</code> (lodash).</p>
+      <p>Type a CVE id. This browser demo queries OSV, EPSS, and nuclei-templates live and shows a slice of the
+      triage: the <strong>EPSS</strong> exploitation probability, the affected packages, and the
+      <strong>real community Nuclei detection</strong> (the actual runnable YAML) when one exists. The full CLI
+      adds KEV status, Metasploit and Exploit-DB matches, a Semgrep rule, and a repro. Try
+      <code>CVE-2021-44228</code> (Log4Shell) or <code>CVE-2021-23337</code> (lodash).</p>
       <div class="mk-row" style="gap: var(--mk-space-3); margin-bottom: var(--mk-space-4); flex-wrap: wrap; align-items: center;">
         <input id="cve-input" type="text" value="CVE-2021-44228" spellcheck="false" autocapitalize="characters"
           aria-label="CVE id"
@@ -101,7 +102,7 @@
         <li><strong>A CWE-driven Semgrep rule</strong> for code-level bugs (SQLi, XSS, RCE, deserialization, ...), language-matched to the affected package.</li>
         <li><strong>A Nuclei template</strong> seeded from the references, plus the Sigma rule.</li>
         <li><strong>A pinned repro scaffold</strong>, a ready-to-run project (npm / pip / cargo) wired to a vulnerable version with a TODO trigger.</li>
-        <li><strong><code>--ai</code></strong>, drafts a concrete detection and repro from the full enriched context via the Claude CLI.</li>
+        <li><strong><code>--ai</code></strong>, drafts a concrete detection and repro from the full enriched context, via the Claude CLI (default, no key), a local <strong>Ollama</strong> model, or any <strong>OpenAI-compatible</strong> API (selectable with <code>--ai-backend</code>).</li>
       </ul>
       <div class="mk-code">
         <div class="mk-code__bar"><span class="mk-code__dot"></span>usage</div>
