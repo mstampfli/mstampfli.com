@@ -1,0 +1,196 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>codecard · mstampfli</title>
+  <meta name="description" content="codecard: a security report card for a whole codebase or deployment. Source, IaC, secrets, and KEV/EPSS-prioritized dependencies in one graded audit, plus optional container-image and AI passes.">
+  <meta property="og:title" content="codecard, a security report card for a codebase">
+  <meta property="og:description" content="Source, IaC, secrets, and dependencies prioritized by CISA KEV + FIRST EPSS, in one A-F graded report. Orchestrates semgrep/trivy/trufflehog/gitleaks/hadolint.">
+  <meta property="og:url" content="https://mstampfli.com/projects/codecard">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/projects">← all projects</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">projects / codecard</span>
+    <h1>codecard</h1>
+    <p class="proj-hero__lede mk-muted">A security report card for a whole codebase or deployment. Point it
+    at a repo, a React app, or a Docker/Kubernetes setup and get one graded, actionable audit across source,
+    config/IaC, secrets, and dependencies, with the exact fix for every finding. Deterministic first; the AI
+    pass is optional, never required.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">python</span>
+      <span class="mk-tag">cli</span>
+      <span class="mk-tag">security</span>
+      <span class="mk-tag">sast</span>
+      <span class="mk-tag mk-tag--success">graded a-f</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/codecard">source →</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects/seccard">seccard, for domains →</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">scans</span><span class="proj-spec__v">source / iac / secrets / deps / images</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">intel</span><span class="proj-spec__v">cisa kev + first epss</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">engines</span><span class="proj-spec__v">semgrep / trivy / gitleaks / hadolint</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">core</span><span class="proj-spec__v">python stdlib</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">keys</span><span class="proj-spec__v">none</span></div>
+  </section>
+
+  <div class="proj-prose reveal" style="max-width: 74ch;">
+    <div class="proj-section">
+      <h2>what it scans</h2>
+      <ul class="proj-feats">
+        <li><strong>Source</strong>, driven by <code>semgrep</code>'s registry ruleset when installed, with a
+        built-in per-language regex set (injection, insecure deserialization, weak crypto, TLS-off, ...) as the
+        fully-offline fallback.</li>
+        <li><strong>Config / IaC</strong>, Dockerfiles, Kubernetes, Terraform, and compose scanned by
+        <code>trivy</code> for misconfigurations (running as root, <code>:latest</code>, privileged, ...), with
+        <code>hadolint</code> adding Dockerfile depth.</li>
+        <li><strong>Secrets</strong>, a built-in detector plus <code>trivy</code>, <code>trufflehog</code>, and
+        <code>gitleaks</code> layered on for breadth and verified-secret confirmation, de-duplicated by file and line.</li>
+        <li><strong>Dependencies, prioritized by real exploit intelligence</strong>, the differentiator (below).</li>
+        <li><strong>Container images</strong>, <code>--image TAG</code> scans a built image's OS packages and
+        bundled app dependencies, folded into the same ranked report.</li>
+      </ul>
+      <p>It walks the whole tree, not a single file. External engines are <strong>use-if-present</strong>:
+      codecard orchestrates the mature scanners when they're on PATH and falls back to its built-in rules when
+      they aren't, then unifies and grades everything together.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>the differentiator: which CVE first</h2>
+      <p>Standard dependency scanning tells you "a CVE exists" and hands you a wall of them. codecard ranks
+      every dependency CVE by <strong>CISA KEV</strong> (is it being exploited in the wild right now?) and
+      <strong>FIRST EPSS</strong> (how likely is exploitation?), so the ones that actually matter float to the
+      top. An actively-exploited dependency caps the grade. trivy and OSV find the vulnerabilities; codecard
+      adds the layer that decides what to fix first, which is the part those tools don't do.</p>
+    </div>
+
+    <div class="proj-section" id="demo">
+      <h2>live demo</h2>
+      <p>A real codecard run on the sample project shipped with the repo, a deliberately messy whole-setup:
+      a Python app, a Dockerfile, an npm lockfile, and a Kubernetes manifest. (codecard is a CLI you run on
+      your own code; a public "upload any repo" endpoint would be an abuse and code-execution backend, so this
+      is a saved run, curated for length.)</p>
+      <div id="codecard-out" class="mk-muted">Loading the sample report ...</div>
+    </div>
+
+    <div class="proj-section">
+      <h2>example run</h2>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>python3 codecard.py ./sample</div>
+<pre><code><span class="tok-p">$ </span><span class="tok-k">python3 codecard.py ./sample</span>
+engines: semgrep (10 source); trivy (29 dep, 22 config, 1 secret); hadolint (5 config); gitleaks (1 secret)
+prioritizing dependency CVEs by KEV + EPSS ...
+
+grade: F   (68 findings, 502 risk points)
+
+Dependencies (exploit-prioritized)
+  <span style="color:var(--mk-danger)">[critical]</span> Improper Input Validation in PyYAML  <span class="tok-c">PyPI:pyyaml@5.1</span>
+            EPSS 14%
+  <span style="color:var(--mk-danger)">[critical]</span> prototype pollution in lodash defaultsDeep  <span class="tok-c">npm:lodash@4.17.11</span>
+            EPSS 15%
+Config / IaC
+  <span style="color:var(--mk-danger)">[high]</span> Image user should not be 'root'  <span class="tok-c">Dockerfile:4</span>
+            <span class="tok-c">fix: add a non-root USER instruction</span>
+Secrets
+  <span style="color:var(--mk-danger)">[critical]</span> Stripe Secret Key  <span class="tok-c">app.py:4</span>
+            <span class="tok-c">fix: remove the secret, rotate it, load from a secret manager</span></code></pre>
+      </div>
+    </div>
+
+    <div class="proj-section">
+      <h2>engines, downloaded for you</h2>
+      <p>The external scanners are optional, but you don't have to hunt them down. <code>codecard --setup</code>
+      pulls semgrep, trivy, trufflehog, gitleaks, and hadolint straight from their official releases into a
+      local cache, no <code>sudo</code>, and codecard finds them there automatically on the next run.</p>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>usage</div>
+<pre><code>python3 codecard.py --setup                       <span class="tok-c"># one-time: fetch the engines</span>
+python3 codecard.py ./myproject                   <span class="tok-c"># scan a whole repo</span>
+python3 codecard.py ./myproject --image app:1.2   <span class="tok-c"># ... and its built image</span>
+python3 codecard.py ./myproject --md report.md    <span class="tok-c"># shareable report</span>
+python3 codecard.py ./myproject --ai              <span class="tok-c"># optional LLM triage pass</span></code></pre>
+      </div>
+    </div>
+
+    <div class="proj-section">
+      <h2>the optional AI pass</h2>
+      <p>Off by default, and the tool is fully useful without it. With <code>--ai</code>, an LLM gets the
+      deterministic findings plus a system prompt as context and does two things the pattern scanners can't:
+      it <strong>triages every finding</strong> as a true or false positive with a reason from the code, and it
+      reports the structural bugs scanners miss (broken authorization, IDOR, auth bypass, business-logic
+      flaws). It runs through a pluggable backend, the Claude CLI, a local Ollama model for proprietary code,
+      or any OpenAI-compatible API. AI findings are labeled to verify, because they are leads, not verdicts.</p>
+    </div>
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">project</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli/codecard">source</a>
+        <a href="/projects">all projects</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:marc@mstampfli.com">marc@mstampfli.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="codecard-demo.js?v=1" defer></script>
+<script src="../site.js"></script>
+</body>
+</html>
