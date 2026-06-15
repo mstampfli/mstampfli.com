@@ -80,9 +80,9 @@
     <div class="proj-section" id="demo">
       <h2>live demo</h2>
       <p>Type a CVE id. This runs entirely in your browser against OSV, EPSS, and nuclei-templates, showing the
-      EPSS exploitation probability, the affected packages, a link to the <strong>real community Nuclei
-      detection</strong> when one exists, and a generated Sigma rule, live. Try <code>CVE-2021-44228</code>
-      (Log4Shell) or <code>CVE-2021-23337</code> (lodash).</p>
+      EPSS exploitation probability, the affected packages, and the <strong>real community Nuclei detection</strong>
+      (the actual runnable YAML) when one exists, live. Try <code>CVE-2021-44228</code> (Log4Shell) or
+      <code>CVE-2021-23337</code> (lodash).</p>
       <div class="mk-row" style="gap: var(--mk-space-3); margin-bottom: var(--mk-space-4); flex-wrap: wrap; align-items: center;">
         <input id="cve-input" type="text" value="CVE-2021-44228" spellcheck="false" autocapitalize="characters"
           aria-label="CVE id"
@@ -95,7 +95,7 @@
     <div class="proj-section">
       <h2>what the full CLI adds</h2>
       <ul class="proj-feats">
-        <li><strong>KEV + exploit detection</strong>, CISA Known-Exploited status and public-exploit references on top of CVSS/CWE.</li>
+        <li><strong>KEV + exploit intelligence</strong>, CISA Known-Exploited status and EPSS probability, plus concrete public-exploit sources: <strong>Metasploit</strong> modules and <strong>Exploit-DB</strong> entries, on top of CVSS/CWE.</li>
         <li><strong>A CWE-driven Semgrep rule</strong> for code-level bugs (SQLi, XSS, RCE, deserialization, ...), language-matched to the affected package.</li>
         <li><strong>A Nuclei template</strong> seeded from the references, plus the Sigma rule.</li>
         <li><strong>A pinned repro scaffold</strong>, a ready-to-run project (npm / pip / cargo) wired to a vulnerable version with a TODO trigger.</li>
@@ -144,7 +144,7 @@ python3 cve2detect.py CVE-2021-23337 --ai</code></pre>
   </div>
 </footer>
 
-<script src="cve2detect-demo.js?v=3" defer></script>
+<script src="cve2detect-demo.js?v=4" defer></script>
 <script src="../site.js"></script>
 </body>
 </html>

@@ -23,7 +23,7 @@ async function nucleiTemplate(cve) {
   for (const path of [`http/cves/${year}/${cve}.yaml`, `cves/${year}/${cve}.yaml`]) {
     try {
       const r = await fetch(`https://raw.githubusercontent.com/projectdiscovery/nuclei-templates/main/${path}`);
-      if (r.ok) return path;
+      if (r.ok) return { path, content: await r.text() };
     } catch (e) { /* ignore */ }
   }
   return null;
@@ -146,14 +146,14 @@ async function run() {
       out.appendChild(t);
     }
 
-    const ntpath = await nucleiTemplate(raw);
-    if (ntpath) {
+    const nt = await nucleiTemplate(raw);
+    if (nt) {
       const p = document.createElement("p");
       const b = document.createElement("strong");
       b.textContent = "Real Nuclei detection available: ";
       const a = document.createElement("a");
-      a.href = `https://github.com/projectdiscovery/nuclei-templates/blob/main/${ntpath}`;
-      a.textContent = ntpath;
+      a.href = `https://github.com/projectdiscovery/nuclei-templates/blob/main/${nt.path}`;
+      a.textContent = nt.path;
       a.target = "_blank";
       a.rel = "noopener";
       p.appendChild(b);
@@ -182,8 +182,13 @@ async function run() {
       out.appendChild(p);
     }
 
-    out.appendChild(heading("sigma.yml"));
-    out.appendChild(codeBlock("generated detection skeleton", sigma(rec)));
+    if (nt) {
+      out.appendChild(heading("real Nuclei detection"));
+      out.appendChild(codeBlock(nt.path, nt.content));
+    } else {
+      out.appendChild(heading("Sigma rule (generated skeleton)"));
+      out.appendChild(codeBlock("seeded; no community Nuclei template exists for this CVE", sigma(rec)));
+    }
     out.appendChild(heading("version checks"));
     out.appendChild(codeBlock("per-ecosystem", versionChecks(rec)));
 
