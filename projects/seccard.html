@@ -1,0 +1,168 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>seccard · mstampfli</title>
+  <meta name="description" content="seccard: a security report card for any domain. TLS, HTTP security headers, and SPF/DMARC/CAA, graded a to f with a concrete fix for every finding.">
+  <meta property="og:title" content="seccard, a security report card for a domain">
+  <meta property="og:description" content="Graded, actionable TLS / headers / email-auth audit. Queries a public resolver so split-horizon DNS can't hide records.">
+  <meta property="og:url" content="https://mstampfli.com/projects/seccard">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/projects">← all projects</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">projects / seccard</span>
+    <h1>seccard</h1>
+    <p class="proj-hero__lede mk-muted">A security report card for any domain. Point it at a site and get a
+    graded, actionable audit of TLS, HTTP security headers, and email/DNS authentication, with a concrete
+    fix for every finding. Stdlib only, no API keys.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">python</span>
+      <span class="mk-tag">cli</span>
+      <span class="mk-tag">security</span>
+      <span class="mk-tag mk-tag--success">graded a-f</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/seccard">source →</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">checks</span><span class="proj-spec__v">tls / headers / dns</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">output</span><span class="proj-spec__v">terminal / html / json</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">deps</span><span class="proj-spec__v">stdlib + dig</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">resolver</span><span class="proj-spec__v">public (1.1.1.1)</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">keys</span><span class="proj-spec__v">none</span></div>
+  </section>
+
+  <div class="proj-prose reveal" style="max-width: 74ch;">
+    <div class="proj-section">
+      <h2>what it grades</h2>
+      <ul class="proj-feats">
+        <li><strong>TLS</strong>, certificate chain and hostname validity, days to expiry, and a deliberate probe for whether the server still accepts legacy TLS 1.0 / 1.1.</li>
+        <li><strong>HTTP security headers</strong>, HSTS, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, clickjacking protection, version disclosure, and the HTTP to HTTPS redirect.</li>
+        <li><strong>Email and DNS auth</strong>, SPF with a strict <code>all</code> qualifier, DMARC and whether the policy actually enforces, MX, and CAA.</li>
+      </ul>
+      <p>Each finding is <code>ok</code>, <code>warn</code>, or <code>FAIL</code>, contributes to a 0 to 100
+      score, and rolls up to a letter grade, with the exact fix printed for anything that is not green.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>example run</h2>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>python3 seccard.py acme.example</div>
+<pre><code><span class="tok-p">$ </span><span class="tok-k">python3 seccard.py acme.example</span>
+
+security report card: acme.example
+overall: C  (71/100)
+
+TLS
+  <span class="boot-ok">[ok ]</span>  TLS chain &amp; hostname: valid certificate, negotiated TLSv1.3
+  <span class="boot-ok">[ok ]</span>  Cert expiry: 64 days remaining
+  <span style="color:var(--mk-danger)">[FAIL]</span> Legacy TLS: server still accepts TLS 1.0, TLS 1.1
+         <span class="tok-c">fix: disable TLS 1.0/1.1; require TLS 1.2+</span>
+HTTP headers
+  <span style="color:var(--mk-danger)">[FAIL]</span> Strict-Transport-Security: missing
+         <span class="tok-c">fix: add HSTS: max-age=63072000; includeSubDomains</span>
+  <span class="boot-warn">[warn]</span> Content-Security-Policy: missing
+  <span class="boot-ok">[ok ]</span>  X-Content-Type-Options: nosniff
+DNS &amp; email auth
+  <span class="boot-ok">[ok ]</span>  SPF: v=spf1 include:_spf.google.com -all
+  <span style="color:var(--mk-danger)">[FAIL]</span> DMARC: no DMARC record
+         <span class="tok-c">fix: publish _dmarc TXT v=DMARC1; p=reject; rua=...</span>
+  <span class="boot-warn">[warn]</span> CAA: no CAA record</code></pre>
+      </div>
+      <p>Real story: I ran this against my own site, it found missing headers (and a bug in itself, see
+      below), I fixed both, and the grade went from D to A.</p>
+    </div>
+
+    <div class="proj-section">
+      <h2>two details I care about</h2>
+      <ul class="proj-feats">
+        <li><strong>It queries a public resolver, not the local one.</strong> Running it on my laptop first
+        gave false negatives, because the laptop resolves through a split-horizon VPN resolver that hides the
+        public records. A security audit tool must never trust that, so seccard asks <code>1.1.1.1</code>.</li>
+        <li><strong>There is no "scan any domain" web backend, on purpose.</strong> A public endpoint that
+        fetches arbitrary hosts on demand is a server-side request forgery and abuse magnet. seccard is a CLI
+        you run yourself, against systems you are allowed to test.</li>
+      </ul>
+    </div>
+
+    <div class="proj-section">
+      <h2>run it</h2>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>usage</div>
+<pre><code>python3 seccard.py example.com
+python3 seccard.py example.com --html report.html
+python3 seccard.py example.com --json</code></pre>
+      </div>
+    </div>
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">project</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli/seccard">source</a>
+        <a href="/projects">all projects</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:marc@mstampfli.com">marc@mstampfli.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>
