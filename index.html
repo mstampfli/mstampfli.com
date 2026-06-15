@@ -28,6 +28,7 @@
 <header class="mk-navbar site-nav">
   <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
   <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/veil">veil</a>
     <a class="mk-navbar__link" href="/projects">projects</a>
     <a class="mk-navbar__link" href="#about">about</a>
     <a class="mk-navbar__link" href="#contact">contact</a>
@@ -67,6 +68,46 @@
 <span class="tok-p">$ </span><span class="tok-k">whoami</span>
 marc · builds from zero.</code></pre>
     </div>
+  </section>
+
+  <!-- ============ featured product ============ -->
+  <section class="mk-container section reveal">
+    <span class="mk-kicker">featured / a product</span>
+    <h2>veil</h2>
+    <p class="section__lede mk-muted">Per-application network isolation, now a product. The free core is
+    open source; Veil Pro adds an anti-detect opsec stack.</p>
+    <article class="mk-card proj proj--featured">
+      <div class="mk-card__header">
+        <h3 class="mk-card__title">veil</h3>
+        <span class="mk-tag">go</span><span class="mk-tag">linux netns</span>
+        <span class="mk-tag mk-tag--accent proj__status">open core</span>
+      </div>
+      <div class="mk-card__body proj--featured__body">
+        <div>
+          <p>Route any single application through a tunnel chain of its own (WireGuard, OpenVPN, Tor,
+          SOCKS5, HTTP) inside a dedicated Linux network namespace, behind a kill switch that is verified,
+          not assumed.</p>
+          <p class="mk-muted">Veil Core is free and open source. Veil Pro adds the anti-detect and
+          operational-security stack, a drop-in upgrade unlocked by a signed offline license.</p>
+          <div class="mk-row hero__actions">
+            <a class="mk-btn mk-btn--primary" href="/veil">get veil →</a>
+            <a class="mk-btn mk-btn--ghost" href="/projects/veil">technical details →</a>
+          </div>
+        </div>
+        <div class="mk-code proj__demo" aria-hidden="true">
+          <pre><code><span class="tok-p">$ </span><span class="tok-k">veil up research</span>
+<span class="boot-ok">[ ok ]</span> netns veil-research (veth pair)
+<span class="boot-ok">[ ok ]</span> chain: wireguard → tor
+<span class="boot-ok">[ ok ]</span> kill switch verified, no leak path
+<span class="boot-ok">[ ok ]</span> launching browser in namespace
+veil<span class="tok-p">$</span> <span class="hero__cursor">▮</span></code></pre>
+        </div>
+      </div>
+      <div class="mk-card__footer">
+        <a href="https://github.com/mstampfli/veil">source →</a>
+        <a class="mk-btn mk-btn--ghost mk-btn--sm" href="/veil">product page →</a>
+      </div>
+    </article>
   </section>
 
   <!-- ============ projects ============ -->
