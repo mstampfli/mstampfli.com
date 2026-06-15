@@ -67,6 +67,8 @@
     <div class="proj-spec"><span class="proj-spec__k">backends</span><span class="proj-spec__v">wg / ovpn / tor / socks5 / http</span></div>
     <div class="proj-spec"><span class="proj-spec__k">kill switch</span><span class="proj-spec__v">verified, fail-closed</span></div>
     <div class="proj-spec"><span class="proj-spec__k">interfaces</span><span class="proj-spec__v">cli + gtk desktop</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">privileges</span><span class="proj-spec__v">cap_net_admin helper</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">updates</span><span class="proj-spec__v">ed25519-signed</span></div>
     <div class="proj-spec"><span class="proj-spec__k">model</span><span class="proj-spec__v">open core</span></div>
   </section>
 
@@ -86,13 +88,14 @@
           <li><strong>Per-application namespace</strong>, each profile launches its target process inside a dedicated Linux network namespace joined to the host by a <code>veth</code> pair.</li>
           <li><strong>No bare-link path</strong>, the process sees only the tunnel, never the host's physical interface or real IP address.</li>
           <li><strong>DNS confinement</strong>, name resolution is forced through the tunnel, eliminating the plaintext resolver leak that defeats most setups.</li>
+          <li><strong>Unprivileged by design</strong>, a small <code>veil-bridge</code> helper holds <code>cap_net_admin</code> to create the <code>veth</code> pair and the firewall rules; the engine and your app never run as root. A rootless user-namespace mode is available too.</li>
         </ul>
       </div>
 
       <div class="proj-section">
         <h2>Composable routing</h2>
         <ul class="proj-feats">
-          <li><strong>Backends</strong>, WireGuard, OpenVPN, the Tor network, and SOCKS5 / HTTP proxies.</li>
+          <li><strong>Backends</strong>, WireGuard (kernel or userspace), OpenVPN, the system Tor daemon, and SOCKS5 / HTTP proxies, all behind one backend interface.</li>
           <li><strong>Multi-hop</strong>, chain hops in series in any order, for example <code>host → WireGuard → Tor → app</code>, so no single provider sees both ends of the path.</li>
           <li><strong>Per-profile</strong>, each profile carries its own chain, so several applications can leave the machine through entirely separate paths at the same time.</li>
         </ul>
@@ -100,10 +103,21 @@
 
       <div class="proj-section">
         <h2>Verified kill switch</h2>
-        <p>Most kill switches install a firewall rule and trust it. Veil verifies: before the namespace is
-        handed to the application it actively confirms there is no route to the internet except through the
-        tunnel, and if the tunnel drops it fails closed. The application loses connectivity rather than
-        leaking onto the open link.</p>
+        <p>Inside the namespace the firewall is default-deny: only the tunnel device and loopback may send
+        traffic out, so a packet has nowhere to go the moment the tunnel is down. Veil does not just trust
+        that rule, it runs an active reachability probe before handing the namespace to your application,
+        confirming the only egress is the tunnel, and re-checks when the tunnel's state changes. If the
+        tunnel drops, the app loses connectivity rather than leaking onto the open link.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>Under the hood</h2>
+        <ul class="proj-feats">
+          <li><strong>Three binaries</strong>, <code>veil</code> (CLI), <code>veil-gui</code> (a GTK desktop app), and <code>veil-bridge</code>, the small <code>cap_net_admin</code> helper that does the privileged veth and firewall work.</li>
+          <li><strong>Written in Go</strong>, with reproducible builds: the release compiles twice and byte-compares to prove the binary matches the source.</li>
+          <li><strong>Signed self-updater</strong>, releases are Ed25519-signed and verified before an atomic in-place replace; an unsigned or tampered download is refused.</li>
+          <li><strong>DNS</strong>, forced through the tunnel with an optional DoH proxy, so resolution is both confined and encrypted.</li>
+        </ul>
       </div>
 
       <div class="proj-section">
@@ -141,6 +155,19 @@ internal/
                 <span class="tok-c"># socks5, http</span>
   chain/        <span class="tok-c"># multi-hop</span>
   updater/      <span class="tok-c"># signed update</span></code></pre>
+      </div>
+
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>kill switch (nft)</div>
+<pre><code><span class="tok-c"># inside netns veil-research</span>
+table inet veil {
+  chain out {
+    type filter hook output
+    policy drop;            <span class="tok-c"># default deny</span>
+    oifname "lo"   accept
+    oifname "vpn0" accept   <span class="tok-c"># tunnel only</span>
+  }
+}</code></pre>
       </div>
     </aside>
   </div>
@@ -182,7 +209,7 @@ internal/
           <p>Everything in Core, plus the anti-detect and operational-security stack for high-assurance research.</p>
           <ul class="proj-feats">
             <li>Per-profile browser personas, with a forge for unique identities</li>
-            <li>TCP, TLS and HTTP/2 fingerprint shaping aligned to the persona</li>
+            <li>TCP, TLS and HTTP/2 fingerprint shaping (uTLS ClientHello, packet-level TCP options, HTTP/2 SETTINGS) aligned to the persona</li>
             <li>Locked exit endpoints, pin a profile to an IP, city or ASN</li>
             <li>Launch-window scheduling, behavioral jitter, CPU throttling</li>
             <li>TLS-inspecting proxy with a managed certificate authority</li>
