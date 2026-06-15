@@ -22,6 +22,24 @@
     });
   }
 
+  /* ---------- live public-repo count (boot log) ----------
+     The markup carries a static fallback; this updates it from the GitHub API.
+     Fails silently (offline / rate-limited) and leaves the fallback in place. */
+  var liveRepoCount = null, repoNodeDone = false;
+  function applyRepoCount() {
+    var el = document.getElementById("repo-count");
+    if (el && liveRepoCount != null) el.textContent = String(liveRepoCount);
+  }
+  function fetchRepoCount(done) {
+    if (!document.getElementById("repo-count") || typeof fetch !== "function") return;
+    fetch("https://api.github.com/users/mstampfli", { headers: { Accept: "application/vnd.github+json" } })
+      .then(function (r) { return r.ok ? r.json() : null; })
+      .then(function (d) {
+        if (d && typeof d.public_repos === "number") { liveRepoCount = d.public_repos; if (done) done(); }
+      })
+      .catch(function () {});
+  }
+
   /* ---------- boot log typing ----------
      The full log is in the markup (works without JS); typing replays it. */
   var boot = document.getElementById("bootlog");
@@ -39,11 +57,18 @@
     (function type() {
       if (li >= nodes.length) return;
       var cur = nodes[li];
+      var isRepo = cur.parent && cur.parent.id === "repo-count";
+      if (isRepo && liveRepoCount != null) cur.text = String(liveRepoCount);  // type the live value if it's in
       ci += 1 + Math.floor(Math.random() * 2);
       cur.node.textContent = cur.text.slice(0, ci);
-      if (ci >= cur.text.length) { li++; ci = 0; setTimeout(type, 90); }
-      else setTimeout(type, 14);
+      if (ci >= cur.text.length) {
+        if (isRepo) repoNodeDone = true;
+        li++; ci = 0; setTimeout(type, 90);
+      } else setTimeout(type, 14);
     })();
+    fetchRepoCount(function () { if (repoNodeDone) applyRepoCount(); });  // late arrival: patch after typing
+  } else {
+    fetchRepoCount(applyRepoCount);  // reduced motion / no boot animation: set it directly
   }
 
   /* ---------- clock (server lives in nbg1, CET/CEST) ---------- */
