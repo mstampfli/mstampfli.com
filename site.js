@@ -2,6 +2,35 @@
 (function () {
   "use strict";
 
+  /* iOS safe-area top: env(safe-area-inset-top) is 0px in portrait on iOS Safari
+     (Apple bug), so resolve the real inset (env when non-zero, else device value)
+     and expose it as --mk-safe-top. A fixed strip + the navbar both use it. */
+  function detectSafeTop() {
+    var probe = document.createElement("div");
+    probe.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;visibility:hidden;pointer-events:none;padding-top:env(safe-area-inset-top);";
+    (document.body || document.documentElement).appendChild(probe);
+    var v = parseFloat(getComputedStyle(probe).paddingTop) || 0;
+    if (probe.parentNode) probe.parentNode.removeChild(probe);
+    if (v > 0) return v;
+    var ua = navigator.userAgent || "";
+    var iOS = /iP(hone|od|ad)/.test(ua) || (navigator.platform === "MacIntel" && navigator.maxTouchPoints > 1);
+    if (!iOS || (window.innerHeight || 0) < (window.innerWidth || 0)) return 0;
+    var w = Math.min(screen.width, screen.height), h = Math.max(screen.width, screen.height);
+    var island = (w === 393 && h === 852) || (w === 430 && h === 932) ||
+                 (w === 402 && h === 874) || (w === 440 && h === 956) ||
+                 (w === 396 && h === 859) || (w === 393 && h === 851);
+    if (island) return 59;
+    var notch = (w === 375 && h === 812) || (w === 390 && h === 844) ||
+                (w === 414 && h === 896) || (w === 428 && h === 926) || (w === 360 && h === 780);
+    return notch ? 47 : 47;
+  }
+  function applySafeTop() {
+    document.documentElement.style.setProperty("--mk-safe-top", detectSafeTop() + "px");
+  }
+  applySafeTop();
+  window.addEventListener("resize", applySafeTop);
+  window.addEventListener("orientationchange", function () { setTimeout(applySafeTop, 350); });
+
   var reduced = window.matchMedia("(prefers-reduced-motion: reduce)").matches ||
                 /\bnoanim\b/.test(location.search);
   if (reduced) document.documentElement.classList.add("no-anim");
