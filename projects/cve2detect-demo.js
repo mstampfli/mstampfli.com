@@ -48,6 +48,10 @@ async function fetchCVE(cve) {
       rec.affected.push({ ecosystem: pkg.ecosystem, name: pkg.name, introduced, fixed });
     }
   }
+  try {
+    const e = await getJSON(`https://api.first.org/data/v1/epss?cve=${cve}`);
+    if (e && e.data && e.data[0]) rec.epss = { score: parseFloat(e.data[0].epss), pct: parseFloat(e.data[0].percentile) };
+  } catch (err) { /* epss optional */ }
   return rec;
 }
 
@@ -122,6 +126,14 @@ async function run() {
   try {
     const rec = await fetchCVE(raw);
     out.innerHTML = "";
+
+    if (rec.epss) {
+      const t = document.createElement("p");
+      const b = document.createElement("strong");
+      b.textContent = `EPSS: ${(rec.epss.score * 100).toFixed(1)}% exploitation probability (${(rec.epss.pct * 100).toFixed(0)}th percentile)`;
+      t.appendChild(b);
+      out.appendChild(t);
+    }
 
     const sum = document.createElement("p");
     sum.textContent = rec.summary || "(no summary in OSV)";

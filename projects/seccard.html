@@ -68,10 +68,13 @@
     <div class="proj-section">
       <h2>what it grades</h2>
       <ul class="proj-feats">
-        <li><strong>TLS</strong>, certificate chain and hostname validity, days to expiry, and a deliberate probe for whether the server still accepts legacy TLS 1.0 / 1.1.</li>
-        <li><strong>HTTP security headers</strong>, HSTS, CSP, X-Content-Type-Options, Referrer-Policy, Permissions-Policy, clickjacking protection, version disclosure, and the HTTP to HTTPS redirect.</li>
-        <li><strong>Email and DNS auth</strong>, SPF with a strict <code>all</code> qualifier, DMARC and whether the policy actually enforces, MX, and CAA.</li>
+        <li><strong>TLS</strong>, chain and hostname validity, expiry, SANs, cipher strength, TLS 1.3 support, legacy TLS 1.0/1.1 acceptance, certificate key size and signature algorithm, and OCSP stapling.</li>
+        <li><strong>HTTP security headers</strong>, HSTS, CSP (with a per-directive quality lint), X-Content-Type-Options, Referrer-Policy, Permissions-Policy, COOP/CORP, clickjacking, cookie flags, version disclosure, and the HTTP to HTTPS redirect.</li>
+        <li><strong>Web hygiene</strong>, <code>security.txt</code> (RFC 9116) and whether the TRACE method is enabled.</li>
+        <li><strong>Email and DNS auth</strong>, SPF (with a DNS-lookup budget), DMARC policy and reporting, DKIM, MX, CAA, DNSSEC, MTA-STS, and TLS-RPT, with mail checks skipped when there's no MX.</li>
       </ul>
+      <p>About 28 checks in all, each <code>ok</code>, <code>warn</code>, or <code>FAIL</code>, with the fix
+      printed for anything not green.</p>
       <p>Each finding is <code>ok</code>, <code>warn</code>, or <code>FAIL</code>, contributes to a 0 to 100
       score, and rolls up to a letter grade, with the exact fix printed for anything that is not green.</p>
     </div>

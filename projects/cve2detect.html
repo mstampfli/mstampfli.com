@@ -67,18 +67,21 @@
   <div class="proj-prose reveal" style="max-width: 74ch;">
     <div class="proj-section">
       <h2>what it does</h2>
-      <p>OSV's CVE record usually only has git-commit ranges, so cve2detect follows the GHSA / PYSEC / RUSTSEC
-      aliases to resolve the real ecosystem packages and version ranges, and pulls CVSS and CWE from NVD. From
-      that it writes a Sigma detection skeleton, a Nuclei web-check template, per-ecosystem version checks, and
-      a minimal repro pinned to a vulnerable version. The generated rules are honest skeletons seeded with real
-      metadata, so you start from structure, not a blank file. An optional <code>--ai</code> flag drafts fuller
-      artifacts through the Claude CLI, no API key.</p>
+      <p><strong>Triage first.</strong> cve2detect enriches the advisory with what a defender actually decides
+      on: whether it is on CISA's <strong>KEV</strong> list (exploited in the wild), its <strong>EPSS</strong>
+      exploitation probability, whether a public exploit is referenced, and the CVSS/CWE. So before writing a
+      line of detection you know whether you even need to. Then it generates artifacts seeded with that data: a
+      Sigma rule, a Nuclei template, per-ecosystem version checks, a CWE-driven <strong>Semgrep</strong> rule
+      for code-level bugs, and a repro pinned to a vulnerable version. (OSV's CVE record only has git-commit
+      ranges, so it follows the GHSA/PYSEC/RUSTSEC aliases for the real packages.) An optional <code>--ai</code>
+      flag drafts a concrete detection and repro from the whole enriched context through the Claude CLI, no API key.</p>
     </div>
 
     <div class="proj-section" id="demo">
       <h2>live demo</h2>
-      <p>Type a CVE id. This runs entirely in your browser against the public OSV API and generates the
-      artifacts live. Try <code>CVE-2021-44228</code> (Log4Shell) or <code>CVE-2021-23337</code> (lodash).</p>
+      <p>Type a CVE id. This runs entirely in your browser against the public OSV and EPSS APIs, showing the
+      EPSS exploitation probability, the affected packages, and a generated Sigma rule, live. Try
+      <code>CVE-2021-44228</code> (Log4Shell) or <code>CVE-2021-23337</code> (lodash).</p>
       <div class="mk-row" style="gap: var(--mk-space-3); margin-bottom: var(--mk-space-4); flex-wrap: wrap; align-items: center;">
         <input id="cve-input" type="text" value="CVE-2021-44228" spellcheck="false" autocapitalize="characters"
           aria-label="CVE id"
@@ -91,10 +94,11 @@
     <div class="proj-section">
       <h2>what the full CLI adds</h2>
       <ul class="proj-feats">
-        <li><strong>NVD enrichment</strong>, CVSS score and CWE class on top of the OSV package data.</li>
-        <li><strong>A Nuclei template</strong> seeded from the references, plus the Sigma rule you see in the demo.</li>
+        <li><strong>KEV + exploit detection</strong>, CISA Known-Exploited status and public-exploit references on top of CVSS/CWE.</li>
+        <li><strong>A CWE-driven Semgrep rule</strong> for code-level bugs (SQLi, XSS, RCE, deserialization, ...), language-matched to the affected package.</li>
+        <li><strong>A Nuclei template</strong> seeded from the references, plus the Sigma rule.</li>
         <li><strong>A pinned repro scaffold</strong>, a ready-to-run project (npm / pip / cargo) wired to a vulnerable version with a TODO trigger.</li>
-        <li><strong><code>--ai</code></strong>, drafts a concrete detection idea and a repro outline via the Claude CLI.</li>
+        <li><strong><code>--ai</code></strong>, drafts a concrete detection and repro from the full enriched context via the Claude CLI.</li>
       </ul>
       <div class="mk-code">
         <div class="mk-code__bar"><span class="mk-code__dot"></span>usage</div>
