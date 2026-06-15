@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
   <title>maka · mstampfli</title>
-  <meta name="description" content="Maka: a from-scratch systems language with explicit ownership (five pointer kinds), structural traits via attr/has, and inline functions that propagate errors through the caller's frame. Compiles to portable C; compiler written in Rust.">
+  <meta name="description" content="Maka: a systems language that puts ownership and nullability in the type, with structural attr/has traits, pattern-matched enums, user-defined iterators, lightweight concurrency, and inline C and Rust interop. Compiles to portable C; compiler written in Rust, with a standard library written in Maka itself.">
   <meta property="og:title" content="maka, a systems language that compiles to C">
-  <meta property="og:description" content="Explicit ownership, forced null handling, attr/has structural traits, inline frame-splicing error propagation. A ground-up Rust rewrite that emits portable C.">
+  <meta property="og:description" content="Explicit ownership and forced null handling in the type, attr/has structural traits, pattern-matched enums, iterators, concurrency, and inline C + Rust interop. Compiles to portable C.">
   <meta property="og:url" content="https://mstampfli.com/projects/maka">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -41,15 +41,18 @@
   <header class="proj-hero reveal">
     <span class="mk-kicker">projects / maka</span>
     <h1>maka</h1>
-    <p class="proj-hero__lede mk-muted">A from-scratch systems language with explicit ownership, structural
-    traits via <code>attr</code>/<code>has</code>, and inline functions that propagate errors through the
-    caller's frame. It compiles to portable C. This is a ground-up redesign, the compiler rewritten in Rust,
-    of an earlier Python implementation of the language.</p>
+    <p class="proj-hero__lede mk-muted">A systems language that puts in the type what C leaves implicit:
+    who owns each piece of memory, and whether a pointer can be null. On top of that foundation it adds
+    structural <code>attr</code>/<code>has</code> traits, pattern-matched enums, user-defined iterators,
+    lightweight concurrency the compiler checks, and inline C and Rust interop. It compiles to portable C
+    you can read, the compiler is written in Rust, and the standard library is written in Maka itself.</p>
     <div class="mk-row proj-hero__meta">
       <span class="mk-tag">rust</span>
-      <span class="mk-tag">c</span>
-      <span class="mk-tag">compiler</span>
-      <span class="mk-tag mk-tag--warn">work in progress</span>
+      <span class="mk-tag">compiles to c</span>
+      <span class="mk-tag">ownership</span>
+      <span class="mk-tag">attr / has</span>
+      <span class="mk-tag">pattern matching</span>
+      <span class="mk-tag mk-tag--accent">c + rust interop</span>
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/maka">source →</a>
@@ -63,31 +66,37 @@
     <div class="proj-spec"><span class="proj-spec__k">memory</span><span class="proj-spec__v">explicit ownership</span></div>
     <div class="proj-spec"><span class="proj-spec__k">pointers</span><span class="proj-spec__v">five kinds</span></div>
     <div class="proj-spec"><span class="proj-spec__k">nulls</span><span class="proj-spec__v">forced handling</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">traits</span><span class="proj-spec__v">attr / has</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">stdlib</span><span class="proj-spec__v">written in maka</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">interop</span><span class="proj-spec__v">c + rust</span></div>
   </section>
 
   <div class="proj-body">
     <div class="proj-prose reveal">
       <div class="proj-section">
         <h2>the idea</h2>
-        <p>Maka started as a Python compiler for a small typed language. This is the second take:
-        the same language taken seriously, redesigned around explicit ownership and rebuilt from
-        scratch with the compiler written in Rust. The goal is the same as before, to feel exactly
-        where a language's guarantees come from by writing every stage by hand, but the guarantees
-        are stronger now: who owns memory, and whether a pointer can be null, are both in the type.</p>
-        <p>It stays honest about its target: a Maka source file becomes a single portable C file,
-        compiled by your system C compiler. The compiler is <code>makac</code>.</p>
+        <p>C makes you carry two facts in your head that the compiler never sees: who is responsible for
+        freeing a pointer, and whether it can be null. Maka moves both into the type. A pointer's kind says
+        how the memory behaves, and you cannot dereference a nullable one without proving it is non-null right
+        there. Everything else, traits, enums, iterators, concurrency, follows from wanting those guarantees
+        without giving up a small, readable language.</p>
+        <p>It stays honest about its target: a Maka file becomes a single portable C file that your system C
+        compiler builds. The compiler, <code>makac</code>, is a Rust workspace, and the standard library
+        (<code>Option</code>, <code>Result</code>, strings, vectors) is written in Maka and shipped inside it.</p>
       </div>
 
       <div class="proj-section">
         <h2>pointers tell you what they are</h2>
-        <p>There are five pointer kinds, each with one job, so a type says how the memory behaves:</p>
+        <p>Five pointer kinds, each with one job, so the type says how the memory behaves:</p>
         <ul class="proj-feats">
           <li><strong><code>&amp;T</code> / <code>&amp;mut T</code></strong>, tracked borrows, never null.</li>
           <li><strong><code>*T</code></strong>, nullable, non-owning.</li>
           <li><strong><code>own *T</code> / <code>own &amp;T</code></strong>, heap owners, nullable or strict.</li>
           <li><strong><code>raw *T</code></strong>, the escape hatch for what the compiler can't see, C interop, fixed addresses, unsafe code.</li>
         </ul>
-        <p><code>alloc value</code> is the only allocator, and its result must land in an owning slot.</p>
+        <p><code>alloc value</code> is the only allocator, and its result must land in an owning slot. A
+        move-and-lifetime checker tracks owners and borrows: use-after-move, returning a local borrow, or
+        stashing a borrow that outlives its owner are all compile errors.</p>
       </div>
 
       <div class="proj-section">
@@ -98,22 +107,45 @@
       </div>
 
       <div class="proj-section">
-        <h2>attr + has, and inline propagation</h2>
+        <h2>traits without the boilerplate</h2>
         <ul class="proj-feats">
-          <li><strong><code>attr</code> + <code>has</code></strong>, structural traits instead of traits-plus-impl. An <code>attr</code> declares a contract (with optional default bodies); <code>Type has Attr { ... }</code> provides the implementation, with <code>_</code> as the placeholder for the implementing type. Generic functions bound over attrs, <code>fn render&lt;T: Show&gt;(&amp;T x)</code>.</li>
-          <li><strong>inline frame-splicing</strong>, an <code>inline fn</code> splices into the caller's frame: <code>propagate X</code> inside it returns <code>X</code> from the <em>outer</em> function, not from the inline callee. Useful for shaped early-exit; recursion among inline functions is forbidden.</li>
-          <li><strong>data structs</strong>, <code>data Point { mut int x; mut int y; }</code> with struct literals desugared against the expected type.</li>
+          <li><strong><code>attr</code> + <code>has</code></strong>, structural traits instead of traits-plus-impl. An <code>attr</code> declares a contract (with optional default bodies); <code>Type has Attr { ... }</code> provides the implementation, with <code>_</code> as the placeholder for the implementing type.</li>
+          <li><strong>generics over attrs</strong>, <code>fn render&lt;T: Show&gt;(&amp;T x)</code>, plus overloading and dynamic dispatch where you want it.</li>
+          <li><strong>inline frame-splicing</strong>, an <code>inline fn</code> splices into the caller's frame: <code>propagate X</code> inside it returns <code>X</code> from the <em>outer</em> function, for shaped early-exit without a hidden call.</li>
         </ul>
       </div>
 
-      <div class="mk-alert mk-alert--warn proj-section">
-        <span class="mk-alert__tag">[ status ]</span>
-        <div class="mk-alert__body">
-          <p>Work in progress, and the active line of development for the language (it supersedes the
-          older Python compiler). The ownership model, forced null handling, <code>attr</code>/<code>has</code>,
-          generics, and inline propagation are the design center; expect rough edges and missing corners
-          while it settles.</p>
-        </div>
+      <div class="proj-section">
+        <h2>enums, matching, and iteration</h2>
+        <ul class="proj-feats">
+          <li><strong>tagged enums + <code>match</code></strong>, payload-carrying variants destructured in match arms; the stdlib's <code>Option</code> and <code>Result</code> are ordinary Maka enums.</li>
+          <li><strong>user iterators</strong>, implement <code>next</code> in a <code>logic</code> block and your type drives <code>for (x in it)</code> directly.</li>
+          <li><strong>closures + operator overloading</strong>, first-class lambdas and overloadable operators for value-like types.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>concurrency the compiler checks</h2>
+        <p>Threads are <code>spawn</code> / <code>join</code>; values cross a thread boundary only through
+        <code>transfer</code> (move) or <code>share</code> (shared reference), and the compiler enforces the
+        sendable/shareable bound at the crossing site rather than trusting you to get it right.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>modules, and inline C and Rust</h2>
+        <ul class="proj-feats">
+          <li><strong>explicit modules</strong>, every cross-module item needs an <code>import</code>; the error at any unimported reference names the exact import line to add. <code>pub</code> controls visibility.</li>
+          <li><strong>C inline</strong>, <code>cinclude</code> / <code>cblock</code> drop C in directly; <code>raw *T</code> and the linker flags carry the ABI.</li>
+          <li><strong>Rust inline</strong>, an <code>rblock</code> holds real Rust and <code>rdep</code> adds crates; each <code>pub fn</code> becomes a callable Maka function, <code>#[repr(C)]</code> structs mirror to <code>data</code>, and anything else rides as an opaque <code>Rust&lt;T&gt;</code> handle that participates in ownership. <code>Send</code>/<code>Sync</code> is verified at thread crossings.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>where it stands</h2>
+        <p>Real and exercised: the compiler passes a suite of 95 end-to-end programs (each checked against
+        expected output) plus 40 negative tests that must fail to compile, so the ownership, null-handling,
+        trait, and interop rules are enforced, not aspirational. The generated C builds with any recent
+        gcc or clang.</p>
       </div>
     </div>
 
@@ -141,17 +173,52 @@
       </div>
 
       <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>pattern matching on enums</div>
+        <pre><code><span class="tok-k">enum</span> <span class="tok-t">Shape</span> {
+    <span class="tok-t">Circle</span> { <span class="tok-t">float</span> radius },
+    <span class="tok-t">Rect</span> { <span class="tok-t">float</span> w, <span class="tok-t">float</span> h },
+    <span class="tok-t">Empty</span>,
+}
+
+<span class="tok-t">float</span> area(<span class="tok-t">Shape</span> s) {
+    <span class="tok-k">return</span> <span class="tok-k">match</span> (s) {
+        <span class="tok-t">Circle</span>{radius} radius * radius * <span class="tok-n">3.14</span>,
+        <span class="tok-t">Rect</span>{w, h}     w * h,
+        <span class="tok-t">Empty</span>          <span class="tok-n">0.0</span>,
+    };
+}</code></pre>
+      </div>
+
+      <div class="mk-code">
         <div class="mk-code__bar"><span class="mk-code__dot"></span>ownership through an inline callee</div>
         <pre><code><span class="tok-k">data</span> <span class="tok-t">Box</span> { <span class="tok-t">int</span> v; }
 
 <span class="tok-k">inline</span> <span class="tok-t">int</span> take(<span class="tok-k">own *</span><span class="tok-t">Box</span> b) {
     <span class="tok-k">if</span> (b == <span class="tok-k">null</span>) { <span class="tok-k">return</span> -<span class="tok-n">1</span>; }
-    <span class="tok-k">return</span> b<span class="tok-k">!</span>.v;     <span class="tok-c">// proof comes from the guard above</span>
+    <span class="tok-k">return</span> b<span class="tok-k">!</span>.v;     <span class="tok-c">// proof comes from the guard</span>
 }
 
 <span class="tok-k">unit</span> main() {
     <span class="tok-k">own *</span><span class="tok-t">Box</span> b = <span class="tok-k">alloc</span> <span class="tok-t">Box</span> { v = <span class="tok-n">42</span> };
-    log(take(b));            <span class="tok-c">// 42</span>
+    log(take(b));            <span class="tok-c">// 42, freed at splice exit</span>
+}</code></pre>
+      </div>
+
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>inline Rust, called from Maka</div>
+        <pre><code><span class="tok-k">rdep</span> regex = <span class="tok-s">"1"</span>;          <span class="tok-c">// a cargo dependency</span>
+
+<span class="tok-k">rblock</span> <span class="tok-s">"
+    use regex::Regex;
+    pub fn count(hay: &amp;str, pat: &amp;str) -> i32 {
+        Regex::new(pat)
+            .map(|r| r.find_iter(hay).count() as i32)
+            .unwrap_or(-1)
+    }
+"</span>;                          <span class="tok-c">// each pub fn -> a Maka fn</span>
+
+<span class="tok-k">unit</span> main() {
+    log(count(<span class="tok-s">"a1b2c3"</span>, <span class="tok-s">"[0-9]"</span>));   <span class="tok-c">// 3</span>
 }</code></pre>
       </div>
 
@@ -162,12 +229,12 @@ hello, world</code></pre>
       </div>
 
       <div class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">notes</h3></div>
+        <div class="mk-card__header"><h3 class="mk-card__title">the compiler</h3></div>
         <div class="mk-card__body">
           <ul class="proj-feats">
-            <li><strong>compiler</strong>, written in Rust; emits a single portable C file built by your C compiler.</li>
-            <li><strong>lineage</strong>, a from-scratch redesign of the earlier Python implementation of Maka.</li>
-            <li><strong>only allocator</strong>, <code>alloc value</code>, which must bind to an owning slot.</li>
+            <li><strong>lexer → parser → sema → codegen</strong>, a Rust workspace; sema does resolution, type-check, and the lifetime/move pass.</li>
+            <li><strong>emits one portable C file</strong>, built by your system gcc/clang.</li>
+            <li><strong>stdlib in Maka</strong>, <code>Option</code>, <code>Result</code>, strings and vectors, compiled in.</li>
           </ul>
         </div>
       </div>
