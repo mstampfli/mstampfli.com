@@ -279,5 +279,5 @@ html.no-anim .hero__cursor { animation: none; }
     gap: var(--mk-space-1);
   }
   .mk-navbar__link { padding: 7px 8px; }
-  #theme-toggle { margin-left: auto; }
+  #theme-toggle { margin-left: 0; }
 }
