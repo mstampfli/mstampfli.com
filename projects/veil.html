@@ -1,0 +1,210 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>veil · mstampfli</title>
+  <meta name="description" content="Veil: per-app network isolation. Route any single app through a chain of WireGuard, OpenVPN, Tor, SOCKS5 and HTTP hops in its own Linux network namespace, with a verified, fail-closed kill switch, a CLI and a GTK GUI. Open-core: a free engine plus a Pro anti-detect edition (WIP).">
+  <meta property="og:title" content="veil, per-app network isolation">
+  <meta property="og:description" content="Route one app through a WireGuard/OpenVPN/Tor/SOCKS5/HTTP chain in its own Linux netns, with a kill switch it verifies instead of assumes. Open-core: free engine on GitHub, plus a Pro opsec edition. Written in Go. WIP.">
+  <meta property="og:url" content="https://mstampfli.com/projects/veil.html">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/projects">← all projects</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">projects / veil</span>
+    <h1>veil</h1>
+    <p class="proj-hero__lede mk-muted">Most "route this through a VPN" setups are all-or-nothing and leak by
+    default: every app shares one exit, and one chatty process can deanonymize the rest. Veil puts a single
+    application inside its own Linux network namespace and forces every packet it sends through a chain you
+    compose (WireGuard, OpenVPN, Tor, SOCKS5, HTTP), with a kill switch it verifies instead of assumes.
+    Written in Go, with a CLI and a GTK GUI.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">go</span>
+      <span class="mk-tag">linux netns</span>
+      <span class="mk-tag">wireguard</span>
+      <span class="mk-tag">tor</span>
+      <span class="mk-tag">open-core</span>
+      <span class="mk-tag mk-tag--warn">WIP</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/veil">source →</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">lang</span><span class="proj-spec__v">go</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">isolation</span><span class="proj-spec__v">linux netns + veth</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">chain</span><span class="proj-spec__v">wg / ovpn / tor / socks5 / http</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">kill switch</span><span class="proj-spec__v">verified, fail-closed</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">ui</span><span class="proj-spec__v">cli + gtk gui</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">model</span><span class="proj-spec__v">open core (free + pro)</span></div>
+  </section>
+
+  <div class="proj-body">
+    <div class="proj-prose reveal">
+      <div class="proj-section">
+        <h2>the idea</h2>
+        <p>A normal VPN routes the whole host: every app shares one exit, and one misbehaving
+        program can deanonymize everything else on the link. Veil flips that around. You give a
+        single app its own network namespace and define exactly how its traffic leaves the machine,
+        independent of whatever the rest of the host is doing.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>isolation</h2>
+        <ul class="proj-feats">
+          <li><strong>Per-app network namespace</strong>, each profile spins up a dedicated Linux netns joined to the host by a <code>veth</code> pair. The target app launches inside it.</li>
+          <li><strong>No bare-link path</strong>, the app sees only the tunnel, never the host's real interface or IP address.</li>
+          <li><strong>DNS captured</strong>, name resolution is forced through the tunnel too, so there is no plaintext resolver leak around the side.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>the chain</h2>
+        <p>Exits are composed, not single. Stack hops in series, in any order, for real multi-hop:</p>
+        <ul class="proj-feats">
+          <li><strong>Backends</strong>, WireGuard, OpenVPN, the Tor network, and SOCKS5 / HTTP proxies.</li>
+          <li><strong>Multi-hop</strong>, for example <code>host → WireGuard → Tor → app</code>, so the WireGuard provider never sees Tor and Tor never sees your home IP.</li>
+          <li><strong>Per-profile</strong>, every profile carries its own chain, so two apps can leave the machine through completely different paths at the same time.</li>
+        </ul>
+      </div>
+
+      <div class="proj-section">
+        <h2>a kill switch you can trust</h2>
+        <p>Most kill switches add a firewall rule and hope. Veil <em>verifies</em>: before it hands the
+        namespace to your app it actively checks there is no route to the internet except through the
+        tunnel, and if the tunnel drops it fails closed. The app loses connectivity rather than spilling
+        onto the bare link.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>open core</h2>
+        <p>The free edition is the full isolation engine, open source on GitHub: chains, the verified
+        kill switch, profiles, the CLI and the GUI. A <strong>Pro</strong> edition adds an anti-detect /
+        opsec stack for security research, and it is a drop-in, the same <code>veil</code> binary gated
+        by a signed offline license:</p>
+        <ul class="proj-feats">
+          <li><strong>Personas</strong>, per-profile browser identities and a forge that generates unique ones.</li>
+          <li><strong>Fingerprint shaping</strong>, TCP, TLS and HTTP/2 characteristics aligned to the persona.</li>
+          <li><strong>Pinned exits</strong>, lock a profile to a chosen exit endpoint, with launch-window and behavioral controls.</li>
+        </ul>
+      </div>
+
+      <div class="mk-alert mk-alert--warn proj-section">
+        <span class="mk-alert__tag">[ status ]</span>
+        <div class="mk-alert__body">
+          <p><strong>Work in progress, Linux-first.</strong> The free engine builds and runs, isolation,
+          chains and the verified kill switch work; the Pro edition and its signed update channel are still
+          being finished. A real but learning-grade tool, not a polished product release yet. For
+          authorized, lawful privacy and security-research use only.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="proj-aside reveal">
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>veil up</div>
+        <pre><code><span class="tok-p">$ </span><span class="tok-k">veil up research</span>
+<span class="boot-ok">[ ok ]</span> netns veil-research (veth pair)
+<span class="boot-ok">[ ok ]</span> chain: wireguard → tor
+<span class="boot-ok">[ ok ]</span> kill switch verified, no leak path
+<span class="boot-ok">[ ok ]</span> dns pinned to tunnel
+<span class="boot-ok">[ ok ]</span> launching app in namespace
+
+veil<span class="tok-p">$</span> <span class="tok-k">veil status</span>
+research  up   exit via tor</code></pre>
+      </div>
+
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>tree</div>
+<pre><code>cmd/veil        <span class="tok-c"># cli</span>
+cmd/veil-gui    <span class="tok-c"># gtk gui</span>
+cmd/veil-bridge <span class="tok-c"># privileged helper</span>
+internal/
+  engine/       <span class="tok-c"># netns, veth,</span>
+                <span class="tok-c"># kill switch</span>
+  backends/     <span class="tok-c"># wg, ovpn, tor,</span>
+                <span class="tok-c"># socks5, http</span>
+  chain/        <span class="tok-c"># multi-hop</span>
+  updater/      <span class="tok-c"># signed update</span></code></pre>
+      </div>
+
+      <div class="mk-card">
+        <div class="mk-card__header"><h3 class="mk-card__title">editions</h3></div>
+        <div class="mk-card__body">
+          <ul class="proj-feats">
+            <li><strong>free</strong>, isolation engine, chains, verified kill switch, CLI + GUI. Open source.</li>
+            <li><strong>pro</strong>, anti-detect stack: personas, fingerprint shaping, pinned exits. Licensed, drop-in.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">project</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli/veil">source</a>
+        <a href="/projects">all projects</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:marc@mstampfli.com">marc@mstampfli.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>
