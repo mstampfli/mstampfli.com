@@ -1,0 +1,214 @@
+<!doctype html>
+<html lang="en">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+  <title>maka · mstampfli</title>
+  <meta name="description" content="Maka: a from-scratch systems language with explicit ownership (five pointer kinds), structural traits via attr/has, and inline functions that propagate errors through the caller's frame. Compiles to portable C; compiler written in Rust.">
+  <meta property="og:title" content="maka, a systems language that compiles to C">
+  <meta property="og:description" content="Explicit ownership, forced null handling, attr/has structural traits, inline frame-splicing error propagation. A ground-up Rust rewrite that emits portable C.">
+  <meta property="og:url" content="https://mstampfli.com/projects/maka">
+  <meta property="og:image" content="https://mstampfli.com/og.png">
+  <meta name="theme-color" content="#1a120b">
+  <link rel="icon" type="image/png" sizes="64x64" href="../favicon.png">
+  <link rel="apple-touch-icon" href="../apple-touch-icon.png">
+  <script>
+    document.documentElement.classList.add("js");
+    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
+    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
+  </script>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css">
+  <link rel="stylesheet" href="../site.css">
+</head>
+<body>
+
+<header class="mk-navbar site-nav">
+  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+  <nav class="mk-navbar__links" aria-label="site">
+    <a class="mk-navbar__link" href="/projects">projects</a>
+    <a class="mk-navbar__link" href="/#about">about</a>
+    <a class="mk-navbar__link" href="/#contact">contact</a>
+    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
+  </nav>
+</header>
+
+<main class="mk-container proj-page">
+
+  <a class="proj-back" href="/projects">← all projects</a>
+
+  <header class="proj-hero reveal">
+    <span class="mk-kicker">projects / maka</span>
+    <h1>maka</h1>
+    <p class="proj-hero__lede mk-muted">A from-scratch systems language with explicit ownership, structural
+    traits via <code>attr</code>/<code>has</code>, and inline functions that propagate errors through the
+    caller's frame. It compiles to portable C. This is a ground-up redesign, the compiler rewritten in Rust,
+    of an earlier Python implementation of the language.</p>
+    <div class="mk-row proj-hero__meta">
+      <span class="mk-tag">rust</span>
+      <span class="mk-tag">c</span>
+      <span class="mk-tag">compiler</span>
+      <span class="mk-tag mk-tag--warn">work in progress</span>
+    </div>
+    <div class="mk-row proj-hero__actions">
+      <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/maka">source →</a>
+      <a class="mk-btn mk-btn--ghost" href="/projects">other projects</a>
+    </div>
+  </header>
+
+  <section class="proj-specs reveal">
+    <div class="proj-spec"><span class="proj-spec__k">compiler</span><span class="proj-spec__v">rust</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">target</span><span class="proj-spec__v">portable c</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">memory</span><span class="proj-spec__v">explicit ownership</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">pointers</span><span class="proj-spec__v">five kinds</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">nulls</span><span class="proj-spec__v">forced handling</span></div>
+  </section>
+
+  <div class="proj-body">
+    <div class="proj-prose reveal">
+      <div class="proj-section">
+        <h2>the idea</h2>
+        <p>Maka started as a Python compiler for a small typed language. This is the second take:
+        the same language taken seriously, redesigned around explicit ownership and rebuilt from
+        scratch with the compiler written in Rust. The goal is the same as before, to feel exactly
+        where a language's guarantees come from by writing every stage by hand, but the guarantees
+        are stronger now: who owns memory, and whether a pointer can be null, are both in the type.</p>
+        <p>It stays honest about its target: a Maka source file becomes a single portable C file,
+        compiled by your system C compiler. The compiler is <code>makac</code>.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>pointers tell you what they are</h2>
+        <p>There are five pointer kinds, each with one job, so a type says how the memory behaves:</p>
+        <ul class="proj-feats">
+          <li><strong><code>&amp;T</code> / <code>&amp;mut T</code></strong>, tracked borrows, never null.</li>
+          <li><strong><code>*T</code></strong>, nullable, non-owning.</li>
+          <li><strong><code>own *T</code> / <code>own &amp;T</code></strong>, heap owners, nullable or strict.</li>
+          <li><strong><code>raw *T</code></strong>, the escape hatch for what the compiler can't see, C interop, fixed addresses, unsafe code.</li>
+        </ul>
+        <p><code>alloc value</code> is the only allocator, and its result must land in an owning slot.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>forced handling, no runtime null checks</h2>
+        <p>You cannot dereference a nullable pointer without proof of non-null at the deref site: a
+        flow-narrowing window, an early-exit guard, or an immediate value straight from <code>alloc</code>.
+        There is no unwrap macro and no hidden runtime null check, the proof is a compile-time obligation.</p>
+      </div>
+
+      <div class="proj-section">
+        <h2>attr + has, and inline propagation</h2>
+        <ul class="proj-feats">
+          <li><strong><code>attr</code> + <code>has</code></strong>, structural traits instead of traits-plus-impl. An <code>attr</code> declares a contract (with optional default bodies); <code>Type has Attr { ... }</code> provides the implementation, with <code>_</code> as the placeholder for the implementing type. Generic functions bound over attrs, <code>fn render&lt;T: Show&gt;(&amp;T x)</code>.</li>
+          <li><strong>inline frame-splicing</strong>, an <code>inline fn</code> splices into the caller's frame: <code>propagate X</code> inside it returns <code>X</code> from the <em>outer</em> function, not from the inline callee. Useful for shaped early-exit; recursion among inline functions is forbidden.</li>
+          <li><strong>data structs</strong>, <code>data Point { mut int x; mut int y; }</code> with struct literals desugared against the expected type.</li>
+        </ul>
+      </div>
+
+      <div class="mk-alert mk-alert--warn proj-section">
+        <span class="mk-alert__tag">[ status ]</span>
+        <div class="mk-alert__body">
+          <p>Work in progress, and the active line of development for the language (it supersedes the
+          older Python compiler). The ownership model, forced null handling, <code>attr</code>/<code>has</code>,
+          generics, and inline propagation are the design center; expect rough edges and missing corners
+          while it settles.</p>
+        </div>
+      </div>
+    </div>
+
+    <aside class="proj-aside reveal">
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>traits.maka · prints "point"</div>
+        <pre><code><span class="tok-k">attr</span> <span class="tok-t">Show</span> {
+    <span class="tok-t">string</span> label(<span class="tok-k">&amp;</span>_ self) { <span class="tok-k">return</span> <span class="tok-s">"any"</span>; }   <span class="tok-c">// default body</span>
+}
+
+<span class="tok-k">data</span> <span class="tok-t">Point</span> { <span class="tok-k">mut</span> <span class="tok-t">int</span> x; <span class="tok-k">mut</span> <span class="tok-t">int</span> y; }
+
+<span class="tok-t">Point</span> <span class="tok-k">has</span> <span class="tok-t">Show</span> {
+    <span class="tok-t">string</span> label(<span class="tok-k">&amp;</span><span class="tok-t">Point</span> self) { <span class="tok-k">return</span> <span class="tok-s">"point"</span>; }
+}
+
+<span class="tok-k">unit</span> render&lt;<span class="tok-t">T</span>: <span class="tok-t">Show</span>&gt;(<span class="tok-k">&amp;</span><span class="tok-t">T</span> x) {
+    log(x.label());
+}
+
+<span class="tok-k">unit</span> main() {
+    <span class="tok-t">Point</span> p = { x = <span class="tok-n">3</span>, y = <span class="tok-n">4</span> };
+    render(<span class="tok-k">&amp;</span>p);                <span class="tok-c">// "point"</span>
+}</code></pre>
+      </div>
+
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>ownership through an inline callee</div>
+        <pre><code><span class="tok-k">data</span> <span class="tok-t">Box</span> { <span class="tok-t">int</span> v; }
+
+<span class="tok-k">inline</span> <span class="tok-t">int</span> take(<span class="tok-k">own *</span><span class="tok-t">Box</span> b) {
+    <span class="tok-k">if</span> (b == <span class="tok-k">null</span>) { <span class="tok-k">return</span> -<span class="tok-n">1</span>; }
+    <span class="tok-k">return</span> b<span class="tok-k">!</span>.v;     <span class="tok-c">// proof comes from the guard above</span>
+}
+
+<span class="tok-k">unit</span> main() {
+    <span class="tok-k">own *</span><span class="tok-t">Box</span> b = <span class="tok-k">alloc</span> <span class="tok-t">Box</span> { v = <span class="tok-n">42</span> };
+    log(take(b));            <span class="tok-c">// 42</span>
+}</code></pre>
+      </div>
+
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>compile + run</div>
+        <pre><code><span class="tok-p">$ </span><span class="tok-k">makac</span> hello.maka -o hello --run
+hello, world</code></pre>
+      </div>
+
+      <div class="mk-card">
+        <div class="mk-card__header"><h3 class="mk-card__title">notes</h3></div>
+        <div class="mk-card__body">
+          <ul class="proj-feats">
+            <li><strong>compiler</strong>, written in Rust; emits a single portable C file built by your C compiler.</li>
+            <li><strong>lineage</strong>, a from-scratch redesign of the earlier Python implementation of Maka.</li>
+            <li><strong>only allocator</strong>, <code>alloc value</code>, which must bind to an owning slot.</li>
+          </ul>
+        </div>
+      </div>
+    </aside>
+  </div>
+
+</main>
+
+<footer id="contact" class="mk-footer">
+  <div class="mk-footer__grid">
+    <div>
+      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
+      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">project</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli/maka">source</a>
+        <a href="/projects">all projects</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">elsewhere</h4>
+      <div class="mk-footer__links">
+        <a href="https://github.com/mstampfli">github</a>
+        <a href="https://mstampfli.github.io/maka-design/">maka-design</a>
+      </div>
+    </div>
+    <div>
+      <h4 class="mk-footer__heading">contact</h4>
+      <div class="mk-footer__links">
+        <a href="mailto:marc@mstampfli.com">marc@mstampfli.com</a>
+      </div>
+    </div>
+  </div>
+  <div class="mk-footer__bottom">
+    <span>© 2026 marc stampfli</span>
+    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+  </div>
+</footer>
+
+<script src="../site.js"></script>
+</body>
+</html>
