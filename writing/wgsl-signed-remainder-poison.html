@@ -56,7 +56,8 @@
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/gpuweb/cts/pull/4665">cts test (merged) →</a>
-      <a class="mk-btn mk-btn--ghost" href="https://github.com/gfx-rs/wgpu/pull/9674">the fix (wgpu PR)</a>
+      <a class="mk-btn mk-btn--ghost" href="https://github.com/gfx-rs/wgpu/pull/9674">vulkan fix (wgpu)</a>
+      <a class="mk-btn mk-btn--ghost" href="https://github.com/gfx-rs/wgpu/pull/9687">opengl fix (wgpu)</a>
       <a class="mk-btn mk-btn--ghost" href="https://github.com/mstampfli/wgsl-mod-repro">reproducer</a>
     </div>
   </header>
@@ -68,6 +69,7 @@
     <div class="proj-spec"><span class="proj-spec__k">verdict</span><span class="proj-spec__v">toolchain bug</span></div>
     <div class="proj-spec"><span class="proj-spec__k">found via</span><span class="proj-spec__v">voxelg</span></div>
     <div class="proj-spec"><span class="proj-spec__k">upstream</span><span class="proj-spec__v">cts test merged</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">also affects</span><span class="proj-spec__v">opengl (glsl)</span></div>
   </section>
 
   <div class="proj-prose reveal" style="max-width: 74ch;">
@@ -80,7 +82,8 @@
         environment <code>OpSRem</code> with a negative operand is <strong>poison</strong> (undefined)
         unless <code>VK_KHR_maintenance8</code> is enabled, which the toolchain never requests. So NVIDIA is
         conformant; the bug is that the shader toolchain emits undefined-behaviour SPIR-V for a value WGSL
-        fully defines. Fix: lower <code>%</code> as <code>a - b * (a / b)</code>.</p>
+        fully defines. Fix: lower <code>%</code> as <code>a - b * (a / b)</code>. The GLSL backend
+        (OpenGL) had the same defect and is fixed the same way.</p>
       </div>
     </div>
 
@@ -167,6 +170,27 @@ NVIDIA a%b  (maintenance8 ON ): [-1, -5, 0, ...]       <span class="boot-ok">COR
     </div>
 
     <div class="proj-section">
+      <h2>the same bug, a second backend</h2>
+      <p>WGSL does not only compile to SPIR-V. naga also emits HLSL for Direct3D, MSL for Metal,
+      and GLSL for OpenGL and OpenGL ES. Signed <code>%</code> with a negative operand is undefined
+      in all of those languages, not only in the Vulkan SPIR-V environment, so I audited each
+      backend.</p>
+      <p>HLSL and Metal already reconstruct it as <code>a - b * (a / b)</code>; they were never
+      wrong. The GLSL backend, though, emitted a raw <code>a % b</code>. Run through OpenGL on the
+      same RTX 5060, it was the Vulkan bug all over again:</p>
+      <div class="mk-code">
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>opengl (glsl backend), before the fix</div>
+<pre><code>-1 % 768   = 255   <span class="boot-warn">WRONG</span>   (should be -1)
+every negative dividend wrong, the same unsigned fold</code></pre>
+      </div>
+      <p>GLSL integer division <code>/</code> truncates toward zero and is well defined; only
+      <code>%</code> is not. So the same reconstruction makes OpenGL match the CPU again. That is
+      now a <a href="https://github.com/gfx-rs/wgpu/pull/9687">second pull request to wgpu</a> for
+      the GLSL backend, bringing it in line with the HLSL and Metal ones. Of the four backends,
+      Vulkan and OpenGL were the two that were actually wrong; both are fixed now.</p>
+    </div>
+
+    <div class="proj-section">
       <h2>why the twist matters</h2>
       <p>The first three steps "proved" it was NVIDIA. They were good evidence and completely misleading
       about <em>fault</em>. The lesson isn't "test on the GPU" (though do that). It's this: before you file a
@@ -205,7 +229,8 @@ NVIDIA a%b  (maintenance8 ON ): [-1, -5, 0, ...]       <span class="boot-ok">COR
       <h4 class="mk-footer__heading">this post</h4>
       <div class="mk-footer__links">
         <a href="https://github.com/gpuweb/cts/pull/4665">cts test (merged)</a>
-        <a href="https://github.com/gfx-rs/wgpu/pull/9674">wgpu fix</a>
+        <a href="https://github.com/gfx-rs/wgpu/pull/9674">vulkan fix</a>
+        <a href="https://github.com/gfx-rs/wgpu/pull/9687">opengl fix</a>
         <a href="https://github.com/mstampfli/wgsl-mod-repro">reproducer</a>
       </div>
     </div>
