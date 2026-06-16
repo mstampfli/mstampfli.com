@@ -211,14 +211,16 @@
       <div class="mk-card__header">
         <h3 class="mk-card__title">10 · wgsl-poison</h3>
         <span class="mk-tag">rust</span><span class="mk-tag">wgsl</span>
-        <span class="mk-tag mk-tag--accent proj__status">upstream PR</span>
+        <span class="mk-tag mk-tag--success proj__status">webgpu cts: merged</span>
       </div>
       <div class="mk-card__body">
         <p>Root-caused why a WGSL shader returns -1 % 768 == 255 on NVIDIA: OpSRem is poison without
-        VK_KHR_maintenance8. Submitted the fix to wgpu/naga and a negative-dividend test to the WebGPU
-        CTS, with a cross-vendor reproducer.</p>
+        VK_KHR_maintenance8. The regression test is merged into the WebGPU Conformance Test Suite (now a
+        listed gpuweb/cts contributor); the fix to wgpu/naga is open for review, with a cross-vendor
+        reproducer.</p>
       </div>
       <div class="mk-card__footer">
+        <a href="https://github.com/gpuweb/cts/pull/4665">cts test (merged) →</a>
         <a href="https://github.com/gfx-rs/wgpu/pull/9674">wgpu PR →</a>
         <a class="mk-btn mk-btn--ghost mk-btn--sm" href="/writing/wgsl-signed-remainder-poison">read more →</a>
       </div>

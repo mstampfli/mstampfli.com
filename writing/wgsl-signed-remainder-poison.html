@@ -52,9 +52,11 @@
       <span class="mk-tag">spir-v</span>
       <span class="mk-tag">vulkan</span>
       <span class="mk-tag mk-tag--accent">root-cause</span>
+      <span class="mk-tag mk-tag--success">webgpu cts: merged</span>
     </div>
     <div class="mk-row proj-hero__actions">
-      <a class="mk-btn mk-btn--primary" href="https://github.com/gfx-rs/wgpu/pull/9674">the fix (wgpu PR) →</a>
+      <a class="mk-btn mk-btn--primary" href="https://github.com/gpuweb/cts/pull/4665">cts test (merged) →</a>
+      <a class="mk-btn mk-btn--ghost" href="https://github.com/gfx-rs/wgpu/pull/9674">the fix (wgpu PR)</a>
       <a class="mk-btn mk-btn--ghost" href="https://github.com/mstampfli/wgsl-mod-repro">reproducer</a>
     </div>
   </header>
@@ -65,6 +67,7 @@
     <div class="proj-spec"><span class="proj-spec__k">surfaced on</span><span class="proj-spec__v">rtx 5060</span></div>
     <div class="proj-spec"><span class="proj-spec__k">verdict</span><span class="proj-spec__v">toolchain bug</span></div>
     <div class="proj-spec"><span class="proj-spec__k">found via</span><span class="proj-spec__v">voxelg</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">upstream</span><span class="proj-spec__v">cts test merged</span></div>
   </section>
 
   <div class="proj-prose reveal" style="max-width: 74ch;">
@@ -158,9 +161,9 @@ NVIDIA a%b  (maintenance8 ON ): [-1, -5, 0, ...]       <span class="boot-ok">COR
       <p>naga already has a wrapper function for signed <code>%</code> and <code>/</code> (it guards
       divide-by-zero and <code>INT_MIN % -1</code> to match WGSL). That wrapper is the natural place to emit
       the reconstruction instead of <code>OpSRem</code>, a small driver-gated change. It is now a
-      <a href="https://github.com/gfx-rs/wgpu/pull/9674">pull request to wgpu</a>, plus a
-      <a href="https://github.com/gpuweb/cts/pull/4665">negative-dividend test for the WebGPU CTS</a> so the
-      class of bug gets caught going forward.</p>
+      <a href="https://github.com/gfx-rs/wgpu/pull/9674">pull request to wgpu</a>; the
+      <a href="https://github.com/gpuweb/cts/pull/4665">negative-dividend test</a> is <strong>merged into the
+      WebGPU Conformance Test Suite</strong>, so the class of bug gets caught going forward.</p>
     </div>
 
     <div class="proj-section">
@@ -201,6 +204,7 @@ NVIDIA a%b  (maintenance8 ON ): [-1, -5, 0, ...]       <span class="boot-ok">COR
     <div>
       <h4 class="mk-footer__heading">this post</h4>
       <div class="mk-footer__links">
+        <a href="https://github.com/gpuweb/cts/pull/4665">cts test (merged)</a>
         <a href="https://github.com/gfx-rs/wgpu/pull/9674">wgpu fix</a>
         <a href="https://github.com/mstampfli/wgsl-mod-repro">reproducer</a>
       </div>
