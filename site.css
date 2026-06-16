@@ -76,6 +76,9 @@
 .proj__demo pre { font-size: var(--mk-text-sm); }
 
 .proj__status { margin-left: auto; }
+/* When a status follows .mk-break it sits on its own line, so left-align it
+   instead of right-pushing (see maka-design .mk-break). */
+.mk-break + .proj__status { margin-left: 0; }
 
 .proj__link { display: block; color: inherit; }
 .proj__link:hover { color: inherit; text-decoration: none; }
