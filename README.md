@@ -18,10 +18,19 @@ site.css site.js  local styles + behavior (theme toggle, boot typing, clock, rev
 ```
 
 ## Deploy
-Served by Caddy (auto-TLS via Cloudflare DNS-01) from a Hetzner box in nbg1, out of
-`/var/www/mstampfli.com`. Deployed with `rsync` over the VPN; Caddy sets the security
-headers (CSP, HSTS, and friends).
+The site lives on the Hetzner hub and is served by Caddy (auto-TLS via Cloudflare
+DNS-01) straight out of the git checkout at `/var/www/mstampfli.com`. No build step,
+no rsync: edit the files on the hub and the change is live the moment Caddy reads them.
+Caddy sets the security headers (CSP, HSTS, and friends).
 
 ```sh
-rsync -az --relative ./index.html ./projects ./writing ./site.css ./site.js <host>:/var/www/mstampfli.com/
+ssh hub
+cd /var/www/mstampfli.com
+# edit in place, then commit for history
+git add -A && git commit -m "..."
 ```
+
+`origin` points at GitHub (`mstampfli/mstampfli.com`); it seeded this checkout and is
+the off-box backup. `git pull` brings in anything pushed from elsewhere. Pushing the
+hub's own commits back to GitHub needs a write credential on the hub (a deploy key),
+set up separately. The pre-migration live files are kept on the `hub-snapshot` branch.
