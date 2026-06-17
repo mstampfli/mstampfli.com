@@ -71,6 +71,8 @@
     <div class="proj-spec"><span class="proj-spec__k">traits</span><span class="proj-spec__v">attr / has</span></div>
     <div class="proj-spec"><span class="proj-spec__k">stdlib</span><span class="proj-spec__v">written in maka</span></div>
     <div class="proj-spec"><span class="proj-spec__k">interop</span><span class="proj-spec__v">c + rust</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">platforms</span><span class="proj-spec__v">linux · windows · macos</span></div>
+    <div class="proj-spec"><span class="proj-spec__k">runtime</span><span class="proj-spec__v">fibers · work-stealing</span></div>
   </section>
 
   <div class="proj-body">
@@ -131,6 +133,12 @@
         <p>Threads are <code>spawn</code> / <code>join</code>; values cross a thread boundary only through
         <code>transfer</code> (move) or <code>share</code> (shared reference), and the compiler enforces the
         sendable/shareable bound at the crossing site rather than trusting you to get it right.</p>
+        <p>Underneath sits a portable runtime: ucontext-based cooperative <em>fibers</em> for cheap
+        in-thread tasks, a work-stealing <em>job</em> pool for CPU-bound parallelism, and pthread-backed
+        sync primitives (mutex, waitgroup, once, channels) with destroy handshakes that wait for
+        in-flight parkers before tearing the primitive down. Wake / cancel / close cross thread boundaries
+        through per-scheduler inboxes; AIO work runs on detached worker threads with the calling fiber
+        gated by an in-flight flag so cancel can't free a buffer the worker is still writing to.</p>
       </div>
 
       <div class="proj-section">
@@ -144,10 +152,17 @@
 
       <div class="proj-section">
         <h2>where it stands</h2>
-        <p>Real and exercised: the compiler passes a suite of 95 end-to-end programs (each checked against
-        expected output) plus 40 negative tests that must fail to compile, so the ownership, null-handling,
-        trait, and interop rules are enforced, not aspirational. The generated C builds with any recent
-        gcc or clang.</p>
+        <p>Real and exercised: the compiler passes a suite of <strong>162 end-to-end programs</strong>
+        (each checked against expected output) plus <strong>46 negative tests</strong> that must fail to
+        compile, so the ownership, null-handling, trait, and interop rules are enforced, not aspirational.
+        The generated C builds with any recent gcc, clang, or mingw-w64.</p>
+        <p>Cross-platform parity is verified by running the full suite on both targets at every change:
+        <strong>162 / 162 on Linux</strong> and <strong>145 / 145 on Windows</strong> (the seventeen-test
+        delta is platform-specific paths — inotify, signalfd, eventfd — that have Windows shims but no
+        behavioral test on the Windows side). macOS isn't a CI target yet — the runtime is written and
+        adversarially audited end-to-end for it (sockaddr <code>sin_len</code> / <code>sun_len</code>,
+        <code>os_unfair_lock</code>, kqueue per-thread fds, no Linux-only syscalls in mac paths), pending
+        a run on real hardware.</p>
       </div>
     </div>
 
