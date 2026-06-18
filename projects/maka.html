@@ -4,9 +4,9 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>maka · mstampfli</title>
-  <meta name="description" content="Maka: a systems language that puts ownership and nullability in the type, with structural attr/has traits, pattern-matched enums, user-defined iterators, lightweight concurrency, and inline C and Rust interop. Compiles to portable C; compiler written in Rust, with a standard library written in Maka itself.">
+  <meta name="description" content="Maka: a systems language that puts ownership and nullability in the type, with structural attr/has traits (now with parametric receivers, associated types, and coherence checking), pattern-matched enums, user-defined iterators, lightweight concurrency, inline C and Rust interop, and a freestanding mode for kernel targets. Compiles to portable C; compiler written in Rust, with a standard library written in Maka itself.">
   <meta property="og:title" content="maka, a systems language that compiles to C">
-  <meta property="og:description" content="Explicit ownership and forced null handling in the type, attr/has structural traits, pattern-matched enums, iterators, concurrency, and inline C + Rust interop. Compiles to portable C.">
+  <meta property="og:description" content="Explicit ownership and forced null handling in the type, structural attr/has traits with parametric receivers and associated types, pattern-matched enums, concurrency, inline C + Rust interop, and a no-libc freestanding mode. Compiles to portable C.">
   <meta property="og:url" content="https://mstampfli.com/projects/maka">
   <meta property="og:image" content="https://mstampfli.com/og.png">
   <meta name="theme-color" content="#1a120b">
@@ -53,8 +53,11 @@
       <span class="mk-tag">compiles to c</span>
       <span class="mk-tag">ownership</span>
       <span class="mk-tag">attr / has</span>
+      <span class="mk-tag">parametric receivers</span>
+      <span class="mk-tag">associated types</span>
       <span class="mk-tag">pattern matching</span>
       <span class="mk-tag mk-tag--accent">c + rust interop</span>
+      <span class="mk-tag">freestanding</span>
     </div>
     <div class="mk-row proj-hero__actions">
       <a class="mk-btn mk-btn--primary" href="https://github.com/mstampfli/maka">source →</a>
@@ -114,8 +117,10 @@
         <h2>traits without the boilerplate</h2>
         <ul class="proj-feats">
           <li><strong><code>attr</code> + <code>has</code></strong>, structural traits instead of traits-plus-impl. An <code>attr</code> declares a contract (with optional default bodies); <code>Type has Attr { ... }</code> provides the implementation, with <code>_</code> as the placeholder for the implementing type.</li>
+          <li><strong>parametric receivers</strong>, an impl's receiver can be a shape, not just a concrete type: <code>*T has Foo</code>, <code>int has Foo</code>, <code>Box&lt;T&gt; has Foo</code>, <code>Result&lt;T, E&gt; has Foo</code>. First-order structural unification at the call site, plus coherence-as-overlap-rejection (no specialization, no backtracking) so dispatch is unambiguous.</li>
+          <li><strong>associated types</strong>, an <code>attr</code> can declare <code>type Slot;</code> and each impl supplies <code>type Slot = Concrete;</code>; type expressions like <code>T::Slot</code> resolve at monomorphization. <code>data Wrap&lt;T: Stored&gt; { T::Slot inner; }</code> materializes a different concrete shape per <code>T</code>. Defaults (<code>type Slot = int;</code>) and bounds (<code>&lt;T: Foo&lt;Slot = i64&gt;&gt;</code>) both ship.</li>
           <li><strong>generics over attrs</strong>, <code>fn render&lt;T: Show&gt;(&amp;T x)</code>, plus overloading and dynamic dispatch where you want it.</li>
-          <li><strong>inline frame-splicing</strong>, an <code>inline fn</code> splices into the caller's frame: <code>propagate X</code> inside it returns <code>X</code> from the <em>outer</em> function, for shaped early-exit without a hidden call.</li>
+          <li><strong>inline frame-splicing</strong>, an <code>inline fn</code> splices into the caller's frame: <code>propagate X</code> inside it returns <code>X</code> from the <em>outer</em> function. The stdlib's <code>try_ok</code> inline helper composes this with <code>Result&lt;T, E&gt;</code> for an early-exit-on-Err idiom that needs no language change.</li>
         </ul>
       </div>
 
@@ -142,6 +147,22 @@
       </div>
 
       <div class="proj-section">
+        <h2>freestanding mode</h2>
+        <p>One flag, <code>--freestanding</code>, strips the libc-using prologue, skips the
+        auto-include of <code>std.maka</code>, and routes <code>alloc</code> / <code>free</code>
+        / <code>panic</code> / <code>log</code> to user-supplied extern symbols
+        (<code>__maka_alloc</code> / <code>__maka_free</code> / <code>__maka_panic</code> /
+        <code>__maka_log_int</code> / <code>__maka_log_str</code>). The emitted C compiles
+        cleanly under <code>gcc -ffreestanding -nostdlib</code> — no stdio, no malloc, no
+        pthread — and the OS author links it with their own bootloader and runtime. The atomic
+        builtins (<code>atomic_load</code>, <code>atomic_cas</code>, <code>atomic_fetch_*</code>,
+        <code>atomic_fence</code>) keep working because they lower to gcc/clang's
+        <code>__atomic_*</code> intrinsics — no C runtime, no syscalls. A 20-line stub runtime
+        in the test suite proves the path end-to-end. The same compile-to-C strategy serves both
+        hosted and kernel targets by swapping the prologue.</p>
+      </div>
+
+      <div class="proj-section">
         <h2>modules, and inline C and Rust</h2>
         <ul class="proj-feats">
           <li><strong>explicit modules</strong>, every cross-module item needs an <code>import</code>; the error at any unimported reference names the exact import line to add. <code>pub</code> controls visibility.</li>
@@ -152,40 +173,49 @@
 
       <div class="proj-section">
         <h2>where it stands</h2>
-        <p>Real and exercised: the compiler passes a suite of <strong>162 end-to-end programs</strong>
-        (each checked against expected output) plus <strong>46 negative tests</strong> that must fail to
-        compile, so the ownership, null-handling, trait, and interop rules are enforced, not aspirational.
-        The generated C builds with any recent gcc, clang, or mingw-w64.</p>
+        <p>Real and exercised: the compiler passes a suite of <strong>174 end-to-end programs</strong>
+        (each checked against expected output) plus a growing set of <strong>negative tests</strong>
+        that must fail to compile — so the ownership, null-handling, trait, and interop rules are
+        enforced, not aspirational. The generated C builds with any recent gcc, clang, or mingw-w64.</p>
         <p>Cross-platform parity is verified by running the full suite on both targets at every change:
-        <strong>162 / 162 on Linux</strong> and <strong>145 / 145 on Windows</strong> (the seventeen-test
-        delta is platform-specific paths — inotify, signalfd, eventfd — that have Windows shims but no
-        behavioral test on the Windows side). macOS isn't a CI target yet — the runtime is written and
-        adversarially audited end-to-end for it (sockaddr <code>sin_len</code> / <code>sun_len</code>,
-        <code>os_unfair_lock</code>, kqueue per-thread fds, no Linux-only syscalls in mac paths), pending
-        a run on real hardware.</p>
+        <strong>174 / 174 on Linux</strong> and <strong>155 / 155 on Windows</strong> (the
+        nineteen-test delta is platform-specific paths — inotify, signalfd, eventfd — that have
+        Windows shims but no behavioral test on the Windows side). The freestanding mode is
+        smoke-tested separately: Maka → no-libc C → object → static ELF with a stub kernel runtime.
+        macOS isn't a CI target yet — the runtime is written and adversarially audited end-to-end
+        for it (sockaddr <code>sin_len</code> / <code>sun_len</code>, <code>os_unfair_lock</code>,
+        kqueue per-thread fds, no Linux-only syscalls in mac paths), pending a run on real hardware.</p>
       </div>
     </div>
 
     <aside class="proj-aside reveal">
       <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>traits.maka · prints "point"</div>
-        <pre><code><span class="tok-k">attr</span> <span class="tok-t">Show</span> {
-    <span class="tok-t">string</span> label(<span class="tok-k">&amp;</span>_ self) { <span class="tok-k">return</span> <span class="tok-s">"any"</span>; }   <span class="tok-c">// default body</span>
+        <div class="mk-code__bar"><span class="mk-code__dot"></span>parametric receivers + associated types</div>
+        <pre><code><span class="tok-k">attr</span> <span class="tok-t">Cell</span> {
+    <span class="tok-k">type</span> <span class="tok-t">Repr</span>;                    <span class="tok-c">// each impl picks the cell type</span>
+    <span class="tok-t">int</span> probe(<span class="tok-k">&amp;</span>_ self);
 }
 
-<span class="tok-k">data</span> <span class="tok-t">Point</span> { <span class="tok-k">mut</span> <span class="tok-t">int</span> x; <span class="tok-k">mut</span> <span class="tok-t">int</span> y; }
-
-<span class="tok-t">Point</span> <span class="tok-k">has</span> <span class="tok-t">Show</span> {
-    <span class="tok-t">string</span> label(<span class="tok-k">&amp;</span><span class="tok-t">Point</span> self) { <span class="tok-k">return</span> <span class="tok-s">"point"</span>; }
+<span class="tok-c">// pointers: one impl covers every *T, T binds at the call site</span>
+<span class="tok-k">*</span><span class="tok-t">T</span> <span class="tok-k">has</span> <span class="tok-t">Cell</span> {
+    <span class="tok-k">type</span> <span class="tok-t">Repr</span> = <span class="tok-k">*</span><span class="tok-t">T</span>;
+    <span class="tok-t">int</span> probe(<span class="tok-k">&amp;</span><span class="tok-k">*</span><span class="tok-t">T</span> self) { <span class="tok-k">return</span> <span class="tok-n">100</span>; }
 }
 
-<span class="tok-k">unit</span> render&lt;<span class="tok-t">T</span>: <span class="tok-t">Show</span>&gt;(<span class="tok-k">&amp;</span><span class="tok-t">T</span> x) {
-    log(x.label());
+<span class="tok-c">// primitives can be has-implementors too</span>
+<span class="tok-t">int</span> <span class="tok-k">has</span> <span class="tok-t">Cell</span> {
+    <span class="tok-k">type</span> <span class="tok-t">Repr</span> = <span class="tok-t">int</span>;
+    <span class="tok-t">int</span> probe(<span class="tok-k">&amp;</span><span class="tok-t">int</span> self) { <span class="tok-k">return</span> self + <span class="tok-n">1000</span>; }
 }
+
+<span class="tok-c">// the placeholder data pattern: T::Repr is resolved per concrete T</span>
+<span class="tok-k">data</span> <span class="tok-t">Wrap</span>&lt;<span class="tok-t">T</span>: <span class="tok-t">Cell</span>&gt; { <span class="tok-t">T</span>::<span class="tok-t">Repr</span> inner; }
 
 <span class="tok-k">unit</span> main() {
-    <span class="tok-t">Point</span> p = { x = <span class="tok-n">3</span>, y = <span class="tok-n">4</span> };
-    render(<span class="tok-k">&amp;</span>p);                <span class="tok-c">// "point"</span>
+    <span class="tok-t">Wrap</span>&lt;<span class="tok-t">int</span>&gt; w = { inner = <span class="tok-n">42</span> };    <span class="tok-c">// materializes as { int inner; }</span>
+    log(w.inner);                       <span class="tok-c">// 42</span>
+    <span class="tok-t">int</span> a = <span class="tok-n">5</span>;
+    log(probe(<span class="tok-k">&amp;</span>a));                    <span class="tok-c">// 1005, from `int has Cell`</span>
 }</code></pre>
       </div>
 
