@@ -4,239 +4,267 @@
   <meta charset="utf-8">
   <meta name="viewport" content="width=device-width, initial-scale=1">
   <title>veil · per-application network isolation</title>
-  <meta name="description" content="Veil is a per-application network isolation engine: route any single app through a composable WireGuard / OpenVPN / Tor / SOCKS5 / HTTP chain in its own Linux network namespace, behind a verified, fail-closed kill switch. Veil Core is free and open source; Veil Pro adds an anti-detect and operational-security stack.">
-  <meta property="og:title" content="veil, per-application network isolation">
-  <meta property="og:description" content="Route one app through a composable WireGuard/OpenVPN/Tor/SOCKS5/HTTP chain in its own Linux netns, behind a verified kill switch. Veil Core is free and open source; Veil Pro adds the anti-detect stack.">
+  <meta name="description" content="veil routes any single app through a composable WireGuard / OpenVPN / Tor / SOCKS5 / HTTP chain in its own Linux network namespace, behind a verified, fail-closed kill switch — running unprivileged with zero host capabilities. Free edition is source-available; Pro adds an anti-detect stack.">
+  <meta property="og:title" content="veil · per-application network isolation">
+  <meta property="og:description" content="Route one app through a composable WireGuard/OpenVPN/Tor/SOCKS5/HTTP chain in its own Linux netns, behind a verified kill switch, with zero host capabilities. Free (source-available) + Pro (anti-detect).">
   <meta property="og:url" content="https://mstampfli.com/veil">
   <meta property="og:image" content="https://mstampfli.com/og.png">
-  <meta name="theme-color" content="#1a120b">
+  <meta name="theme-color" content="#07090d">
   <link rel="icon" type="image/png" sizes="64x64" href="favicon.png">
   <link rel="apple-touch-icon" href="apple-touch-icon.png">
-  <script>
-    document.documentElement.classList.add("js");
-    try { var t = localStorage.getItem("maka-theme"); if (t) document.documentElement.dataset.theme = t; } catch (e) {}
-    if (/[?&]light\b/.test(location.search)) document.documentElement.dataset.theme = "light";
-  </script>
   <link rel="preconnect" href="https://fonts.googleapis.com">
   <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
-  <link rel="stylesheet" href="https://mstampfli.github.io/maka-design/styles.css?v=6">
-  <link rel="stylesheet" href="site.css?v=6">
+  <link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=IBM+Plex+Mono:wght@400;500&family=IBM+Plex+Sans:wght@400;500;600;700&display=swap">
+  <style>
+    /* veil design — dark/teal, matching the veil GUI. Self-contained; no maka-design. */
+    :root{
+      --ink-0:#07090d; --ink-1:#0c1015; --ink-2:#11161e; --ink-3:#161c26; --ink-4:#1d2530;
+      --rule:#1a212c; --rule-bright:#232c39;
+      --fg:#e6edf5; --muted:#9aa7b6;
+      --teal:#34d3c5; --teal-2:#22b8aa; --teal-soft:rgba(52,211,197,.10); --teal-line:rgba(52,211,197,.28);
+      --ok:#3ad48e; --warn:#f0b455;
+      --pro:#b08bff; --pro-soft:rgba(176,139,255,.10); --pro-line:rgba(176,139,255,.30);
+      --sans:"IBM Plex Sans",-apple-system,BlinkMacSystemFont,"Segoe UI",sans-serif;
+      --mono:"IBM Plex Mono","JetBrains Mono","SF Mono",monospace;
+      --maxw:1080px;
+    }
+    *{box-sizing:border-box}
+    html{scroll-behavior:smooth}
+    body{margin:0;background:var(--ink-0);color:var(--fg);font-family:var(--sans);line-height:1.6;
+      -webkit-font-smoothing:antialiased;
+      background-image:radial-gradient(900px 480px at 78% -8%,rgba(52,211,197,.07),transparent 60%);}
+    a{color:var(--teal);text-decoration:none}
+    a:hover{color:var(--teal-2)}
+    .wrap{max-width:var(--maxw);margin:0 auto;padding:0 24px}
+    .kicker{font-family:var(--mono);font-size:12px;letter-spacing:.14em;text-transform:uppercase;color:var(--teal);opacity:.9}
+    h1,h2,h3{line-height:1.15;margin:0}
+    h2{font-size:26px;font-weight:700;margin:10px 0 6px}
+    h3{font-size:17px;font-weight:600}
+    p{color:var(--muted)}
+    code{font-family:var(--mono);font-size:.92em;color:#cdd6e0}
+
+    /* nav */
+    nav.top{position:sticky;top:0;z-index:10;display:flex;align-items:center;gap:18px;
+      padding:14px 24px;border-bottom:1px solid var(--rule);
+      background:rgba(7,9,13,.82);backdrop-filter:blur(8px)}
+    .brand{font-weight:700;letter-spacing:.02em;font-size:18px;color:var(--fg)}
+    .brand b{color:var(--teal)}
+    nav.top .sp{flex:1}
+    nav.top a{color:var(--muted);font-size:14px}
+    nav.top a:hover{color:var(--fg)}
+
+    /* hero */
+    .hero{display:grid;grid-template-columns:1.1fr .9fr;gap:40px;align-items:center;padding:64px 0 48px}
+    .hero h1{font-size:64px;font-weight:700;letter-spacing:-.02em}
+    .hero h1 .cur{color:var(--teal);font-weight:400}
+    .lede{font-size:18px;margin:14px 0 22px;max-width:46ch}
+    .row{display:flex;flex-wrap:wrap;gap:12px;align-items:center}
+    .btn{display:inline-block;padding:10px 18px;border-radius:10px;font-weight:600;font-size:14px;
+      border:1px solid var(--rule-bright);color:var(--fg);background:var(--ink-2)}
+    .btn:hover{border-color:var(--teal-line);color:var(--fg)}
+    .btn.primary{background:var(--teal);color:#05221f;border-color:var(--teal)}
+    .btn.primary:hover{background:var(--teal-2);color:#05221f}
+    .btn.pro{border-color:var(--pro-line);color:#d9c9ff}
+    .btn.pro:hover{background:var(--pro-soft)}
+    .tags{margin-top:18px;display:flex;gap:8px;flex-wrap:wrap}
+    .tag{font-family:var(--mono);font-size:11px;letter-spacing:.06em;padding:4px 9px;border-radius:999px;
+      border:1px solid var(--rule-bright);color:var(--muted)}
+    .tag.teal{border-color:var(--teal-line);color:var(--teal)}
+    .tag.pro{border-color:var(--pro-line);color:var(--pro)}
+
+    /* terminal */
+    .term{background:var(--ink-1);border:1px solid var(--rule);border-radius:12px;overflow:hidden;
+      box-shadow:0 24px 60px -30px rgba(0,0,0,.8)}
+    .term .bar{display:flex;align-items:center;gap:8px;padding:9px 13px;border-bottom:1px solid var(--rule);
+      font-family:var(--mono);font-size:12px;color:var(--muted)}
+    .term .dot{width:9px;height:9px;border-radius:50%;background:#2b3543}
+    .term pre{margin:0;padding:16px;font-family:var(--mono);font-size:12.5px;line-height:1.7;overflow-x:auto}
+    .p{color:#5b6675}.k{color:#cdd6e0}.ok{color:var(--ok)}.c{color:#5b6675}.n{color:var(--teal)}
+
+    /* sections + cards */
+    section{padding:40px 0;border-top:1px solid var(--rule)}
+    .grid{display:grid;grid-template-columns:repeat(3,1fr);gap:16px;margin-top:22px}
+    .grid.two{grid-template-columns:1fr 1fr}
+    .card{background:var(--ink-2);border:1px solid var(--rule);border-radius:12px;padding:18px 18px 20px}
+    .card h3{margin-bottom:6px}
+    .card p{margin:0;font-size:14px}
+    .card.pro{border-color:var(--pro-line);background:linear-gradient(180deg,var(--pro-soft),transparent 60%),var(--ink-2)}
+    .feats{list-style:none;margin:10px 0 0;padding:0}
+    .feats li{position:relative;padding:4px 0 4px 22px;font-size:14px;color:#c4cedb}
+    .feats li::before{content:"›";position:absolute;left:4px;color:var(--teal);font-weight:700}
+    .card.pro .feats li::before{color:var(--pro)}
+    .pill{display:inline-block;font-family:var(--mono);font-size:11px;padding:3px 8px;border-radius:6px;margin-left:6px}
+    .pill.free{background:var(--teal-soft);color:var(--teal);border:1px solid var(--teal-line)}
+    .pill.pro{background:var(--pro-soft);color:var(--pro);border:1px solid var(--pro-line)}
+
+    .dl{display:grid;grid-template-columns:1fr 1fr;gap:16px;margin-top:22px}
+    .dl .card a{display:inline-block;margin-top:4px}
+    .mono-list{font-family:var(--mono);font-size:13px;line-height:1.9}
+    .note{font-size:13px;color:var(--muted);border-left:2px solid var(--warn);padding:6px 0 6px 14px;margin-top:16px}
+    .disc{background:var(--ink-1);border:1px solid var(--rule);border-radius:12px;padding:18px;font-size:13.5px;color:var(--muted)}
+    .disc b{color:#cdd6e0}
+
+    footer{border-top:1px solid var(--rule);padding:28px 0;color:var(--muted);font-size:13px}
+    footer .row{justify-content:space-between}
+    @media(max-width:820px){
+      .hero{grid-template-columns:1fr;padding:40px 0 32px}
+      .hero h1{font-size:46px}
+      .grid,.grid.two,.dl{grid-template-columns:1fr}
+    }
+  </style>
 </head>
 <body>
 
-<header class="mk-navbar site-nav">
-  <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
-  <nav class="mk-navbar__links" aria-label="site">
-    <a class="mk-navbar__link is-active" href="/veil">veil</a>
-    <a class="mk-navbar__link" href="/projects">projects</a>
-    <a class="mk-navbar__link" href="/#about">about</a>
-    <a class="mk-navbar__link" href="/#contact">contact</a>
-    <button class="mk-btn mk-btn--ghost mk-btn--sm" id="theme-toggle" aria-label="toggle color theme">[ light_mode ]</button>
-  </nav>
-</header>
+<nav class="top">
+  <span class="brand"><b>veil</b></span>
+  <span class="sp"></span>
+  <a href="#download">download</a>
+  <a href="#editions">editions</a>
+  <a href="https://github.com/mstampfli/veil">github</a>
+  <a href="/">← mstampfli.com</a>
+</nav>
 
-<main>
+<main class="wrap">
 
-  <!-- ============ hero ============ -->
-  <section class="hero mk-container">
-    <div class="hero__intro">
-      <span class="mk-kicker">veil / a product by mstampfli</span>
-      <h1 class="hero__name">veil<span class="hero__cursor" aria-hidden="true">▮</span></h1>
-      <p class="hero__tagline mk-muted">Per-application network isolation. Route any single app through a
-      tunnel chain of its own (WireGuard, OpenVPN, Tor, SOCKS5, HTTP), inside a dedicated Linux network
-      namespace, behind a kill switch that is verified, not assumed.</p>
-      <div class="mk-row hero__actions">
-        <a class="mk-btn mk-btn--primary" href="#download">download</a>
-        <a class="mk-btn mk-btn--ghost" href="https://github.com/mstampfli/veil">source →</a>
-        <a class="mk-btn mk-btn--ghost" href="/projects/veil">technical deep-dive →</a>
+  <!-- hero -->
+  <section class="hero" style="border-top:none">
+    <div>
+      <span class="kicker">per-application network isolation</span>
+      <h1>veil<span class="cur">▮</span></h1>
+      <p class="lede">Route any single app through a tunnel chain of its own — WireGuard, OpenVPN, Tor,
+      SOCKS5, HTTP — inside a dedicated Linux network namespace, behind a kill switch that is
+      <em>verified, not assumed</em>. Runs unprivileged: zero host capabilities.</p>
+      <div class="row">
+        <a class="btn primary" href="#download">Download free</a>
+        <a class="btn" href="https://github.com/mstampfli/veil">Source →</a>
+        <a class="btn pro" href="#editions">Veil Pro →</a>
       </div>
-      <div class="mk-row hero__facts">
-        <span class="mk-tag">open source core</span>
-        <span class="mk-tag">linux</span>
-        <span class="mk-tag mk-tag--accent">pro: anti-detect</span>
+      <div class="tags">
+        <span class="tag teal">source-available</span>
+        <span class="tag">linux</span>
+        <span class="tag">zero-capability</span>
+        <span class="tag pro">pro: anti-detect</span>
       </div>
     </div>
-
-    <div class="mk-code hero__term">
-      <div class="mk-code__bar"><span class="mk-code__dot"></span>veil up</div>
-      <pre><code><span class="tok-p">$ </span><span class="tok-k">veil up research</span>
-<span class="boot-ok">[ ok ]</span> netns veil-research (veth pair)
-<span class="boot-ok">[ ok ]</span> chain: wireguard → tor
-<span class="boot-ok">[ ok ]</span> kill switch verified, no leak path
-<span class="boot-ok">[ ok ]</span> dns pinned to tunnel
-<span class="boot-ok">[ ok ]</span> launching browser in namespace
-<span class="tok-p">$ </span><span class="tok-k">curl -s ifconfig.me</span>
-<span class="tok-c"># tor exit; host ip never exposed</span>
-185.220.101.<span class="tok-n">x</span></code></pre>
+    <div class="term">
+      <div class="bar"><span class="dot"></span>veil run research</div>
+<pre><span class="p">$ </span><span class="k">veil run research -- firefox</span>
+<span class="ok">[ ok ]</span> netns veil-research (unprivileged userns)
+<span class="ok">[ ok ]</span> chain: wireguard → tor
+<span class="ok">[ ok ]</span> kill switch verified — no leak path
+<span class="ok">[ ok ]</span> dns pinned to tunnel
+<span class="ok">[ ok ]</span> uplink: pasta (userspace) — CapEff=0
+<span class="p">$ </span><span class="k">curl -s ifconfig.me</span>
+<span class="c"># tor exit; host ip never exposed</span>
+185.220.101.<span class="n">x</span></pre>
     </div>
   </section>
 
-  <!-- ============ why ============ -->
-  <section class="mk-container section reveal">
-    <span class="mk-kicker">why / one app, one tunnel</span>
-    <h2>Isolation that scopes to the app, not the host</h2>
-    <p class="section__lede mk-muted">A conventional VPN routes the whole machine: every app shares one exit,
-    and one chatty process can deanonymize the rest. Veil scopes the tunnel to a single application.</p>
-
-    <div class="proj-grid">
-      <article class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">Per-app isolation</h3></div>
-        <div class="mk-card__body">
-          <p>Each profile runs its target process in a dedicated Linux network namespace. The app sees only
-          the tunnel, never the host's real interface, IP, or resolver.</p>
-        </div>
-      </article>
-      <article class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">Composable multi-hop</h3></div>
-        <div class="mk-card__body">
-          <p>Chain WireGuard, OpenVPN, Tor, SOCKS5 and HTTP hops in any order, for example
-          <code>host → WireGuard → Tor → app</code>, so no single provider sees both ends.</p>
-        </div>
-      </article>
-      <article class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">Verified kill switch</h3></div>
-        <div class="mk-card__body">
-          <p>Veil confirms there is no route to the internet except the tunnel before the app starts, and
-          fails closed if the tunnel drops. It verifies, it does not assume.</p>
-        </div>
-      </article>
+  <!-- why -->
+  <section>
+    <span class="kicker">why / one app, one tunnel</span>
+    <h2>Isolation scoped to the app, not the host</h2>
+    <p>A conventional VPN routes the whole machine: every app shares one exit, and one chatty process can
+    deanonymize the rest. veil scopes the tunnel to a single application.</p>
+    <div class="grid">
+      <div class="card"><h3>Per-app isolation</h3><p>Each profile runs its process in its own Linux network namespace — it sees only the tunnel, never the host's real interface, IP, or resolver.</p></div>
+      <div class="card"><h3>Composable multi-hop</h3><p>Chain WireGuard, OpenVPN, Tor, SOCKS5 and HTTP in any order (e.g. <code>host → WireGuard → Tor → app</code>), so no single provider sees both ends.</p></div>
+      <div class="card"><h3>Verified kill switch</h3><p>veil proves there is no route out except the tunnel before the app starts, and fails closed if the tunnel drops. It verifies; it doesn't assume.</p></div>
+      <div class="card"><h3>Zero host capabilities</h3><p>The engine runs unprivileged via user namespaces + a userspace uplink (pasta) — <code>CapEff=0</code>, no <code>cap_net_admin</code>, no daemon.</p></div>
+      <div class="card"><h3>No telemetry</h3><p>veil makes zero network calls of its own: no analytics, no update pings, no phone-home. License checks (Pro) are fully offline.</p></div>
+      <div class="card"><h3>GUI + CLI + Docker</h3><p>A GTK desktop app and a scriptable CLI, plus a hardened capless Docker image (with an optional headful-browser variant).</p></div>
     </div>
   </section>
 
-  <!-- ============ editions ============ -->
-  <section class="mk-container section reveal">
-    <span class="mk-kicker">editions / free and pro</span>
-    <h2>Two editions, one binary</h2>
-    <p class="section__lede mk-muted">Veil is open-core. The complete isolation engine is free and open
-    source; the anti-detect and operational-security stack is a commercial, drop-in upgrade, the same
-    binary unlocked by a signed offline license.</p>
-
-    <div class="proj-index-grid">
-      <article class="mk-card">
-        <div class="mk-card__header">
-          <h3 class="mk-card__title">Veil Core</h3>
-          <span class="mk-tag mk-tag--success">free</span><span class="mk-tag">open source</span>
-        </div>
-        <div class="mk-card__body">
-          <p>The complete network-isolation engine. No account, no profile limits, no telemetry.</p>
-          <ul class="proj-feats">
-            <li>Per-application Linux network-namespace isolation</li>
-            <li>Composable chains: WireGuard, OpenVPN, Tor, SOCKS5, HTTP</li>
-            <li>Multi-hop routing, unlimited profiles</li>
-            <li>Verified, fail-closed kill switch</li>
-            <li>DNS leak prevention inside the namespace</li>
-            <li>Command-line interface and GTK desktop application</li>
-          </ul>
-        </div>
-        <div class="mk-card__footer">
-          <a class="mk-btn mk-btn--primary mk-btn--sm" href="#download">download free →</a>
-        </div>
-      </article>
-
-      <article class="mk-card">
-        <div class="mk-card__header">
-          <h3 class="mk-card__title">Veil Pro</h3>
-          <span class="mk-tag mk-tag--accent">commercial</span><span class="mk-tag">anti-detect</span>
-        </div>
-        <div class="mk-card__body">
-          <p>Everything in Core, plus the anti-detect and operational-security stack for high-assurance research.</p>
-          <ul class="proj-feats">
-            <li>Per-profile browser personas, with a forge for unique identities</li>
-            <li>TCP, TLS and HTTP/2 fingerprint shaping aligned to the persona</li>
-            <li>Locked exit endpoints, pin a profile to an IP, city or ASN</li>
-            <li>Launch-window scheduling, behavioral jitter, CPU throttling</li>
-            <li>TLS-inspecting proxy with a managed certificate authority</li>
-            <li>Tor circuit control, including exit country and bridges</li>
-            <li>Signed offline licensing and a private update channel</li>
-          </ul>
-        </div>
-        <div class="mk-card__footer">
-          <a class="mk-btn mk-btn--ghost mk-btn--sm" href="mailto:marc@mstampfli.com?subject=Veil%20Pro%20early%20access">request early access →</a>
-        </div>
-      </article>
-    </div>
-  </section>
-
-  <!-- ============ download ============ -->
-  <section class="mk-container section reveal" id="download">
-    <span class="mk-kicker">download / get veil</span>
-    <h2>Get veil</h2>
-    <p class="section__lede mk-muted">Veil Core is free and open source. Linux is the primary target today,
-    build and install in one step. Prebuilt signed binaries and Windows / macOS builds are in early access.</p>
-
-    <div class="proj-index-grid">
-      <div class="mk-code">
-        <div class="mk-code__bar"><span class="mk-code__dot"></span>install (linux)</div>
-        <pre><code><span class="tok-p">$ </span><span class="tok-k">git clone https://github.com/mstampfli/veil</span>
-<span class="tok-p">$ </span><span class="tok-k">cd veil && ./install.sh</span>
-<span class="boot-ok">[ ok ]</span> built veil, veil-gui, veil-bridge
-<span class="boot-ok">[ ok ]</span> installed to /usr/local/bin
-<span class="tok-p">$ </span><span class="tok-k">veil up myprofile</span></code></pre>
+  <!-- editions -->
+  <section id="editions">
+    <span class="kicker">editions / free and pro</span>
+    <h2>Two editions, one engine</h2>
+    <p>veil is open-core. The complete isolation engine is free and source-available; the anti-detect and
+    operational-security stack is a commercial upgrade — the same engine, unlocked by a signed offline license.</p>
+    <div class="grid two">
+      <div class="card">
+        <h3>Veil Core <span class="pill free">free · source-available</span></h3>
+        <p>The complete network-isolation engine. No account, no profile limits, no telemetry.</p>
+        <ul class="feats">
+          <li>Per-application Linux network-namespace isolation</li>
+          <li>Composable chains: WireGuard, OpenVPN, Tor, SOCKS5, HTTP</li>
+          <li>Multi-hop routing, unlimited profiles</li>
+          <li>Verified, fail-closed kill switch + per-namespace DNS</li>
+          <li>Zero-capability uplink (unprivileged, no <code>cap_net_admin</code>)</li>
+          <li>CLI + GTK GUI; bulk import of Mullvad / Proton / IVPN configs</li>
+          <li>Hardened Docker image (capless; optional browser variant)</li>
+        </ul>
+        <p style="margin-top:14px"><a class="btn primary" href="#download">Download free →</a></p>
       </div>
-
-      <div class="mk-card">
-        <div class="mk-card__header"><h3 class="mk-card__title">platforms</h3></div>
-        <div class="mk-card__body">
-          <ul class="proj-feats">
-            <li><strong>Linux</strong>, x86-64, the primary target. Build from source today.</li>
-            <li><strong>Windows / macOS</strong>, builds in progress.</li>
-            <li><strong>Prebuilt binaries</strong>, signed releases over the update channel, in early access.</li>
-          </ul>
-          <div class="mk-row">
-            <a class="mk-btn mk-btn--primary mk-btn--sm" href="https://github.com/mstampfli/veil">github →</a>
-            <a class="mk-btn mk-btn--ghost mk-btn--sm" href="/projects/veil">how it works →</a>
-          </div>
-        </div>
+      <div class="card pro">
+        <h3>Veil Pro <span class="pill pro">commercial</span></h3>
+        <p>Everything in Core, plus the anti-detect &amp; opsec stack for high-assurance research.</p>
+        <ul class="feats">
+          <li>Fingerprint impersonation across TCP, TLS, HTTP/2 and the browser</li>
+          <li>Persona system + forge — coherent, unique identities per profile</li>
+          <li>Locked endpoints, schedule guard, drift detection</li>
+          <li>Behavioral jitter; advanced Tor controls (exit country, bridges)</li>
+          <li>TLS-inspecting proxy with managed CA</li>
+          <li>veil-browser, a hardened build with signed binary updates</li>
+          <li>Signed offline licensing + a private update channel</li>
+        </ul>
+        <p style="margin-top:14px"><a class="btn pro" href="mailto:marc@mstampfli.com?subject=Veil%20Pro%20license">Get a Pro license →</a></p>
       </div>
     </div>
+    <p class="note">Implementation of the Pro stack is proprietary; this is a capability summary. See the
+    free spec at <a href="https://github.com/mstampfli/veil/blob/master/docs/SPEC.md">docs/SPEC.md</a>.</p>
   </section>
 
-  <!-- ============ closing ============ -->
-  <section class="mk-container section reveal">
-    <div class="maka-strip">
-      <span class="mk-logo-mark maka-strip__mark" aria-hidden="true"></span>
-      <p class="maka-strip__text">Free to start, open source, and yours to audit. Veil Pro is in early
-      access for teams that need the anti-detect stack.</p>
-      <a class="mk-btn mk-btn--primary mk-btn--sm" href="#download">get veil →</a>
+  <!-- download -->
+  <section id="download">
+    <span class="kicker">download / get veil</span>
+    <h2>Get veil — free edition</h2>
+    <p>Source-available under PolyForm Noncommercial. Linux x86-64 is the primary target. Build from source
+    in one step, or grab the prebuilt static binaries from the latest release.</p>
+    <div class="dl">
+      <div class="term">
+        <div class="bar"><span class="dot"></span>install from source (any distro)</div>
+<pre><span class="p">$ </span><span class="k">git clone https://github.com/mstampfli/veil</span>
+<span class="p">$ </span><span class="k">cd veil && sudo ./install.sh</span>
+<span class="ok">[ ok ]</span> deps + pasta built; veil installed
+<span class="p">$ </span><span class="k">veil run myprofile</span></pre>
+      </div>
+      <div class="card">
+        <h3>Prebuilt — v0.1.0 (linux/amd64)</h3>
+        <div class="mono-list" style="margin-top:8px">
+          <a href="https://github.com/mstampfli/veil/releases/download/v0.1.0/veil">veil</a> · cli (static)<br>
+          <a href="https://github.com/mstampfli/veil/releases/download/v0.1.0/veil-bridge">veil-bridge</a> · helper (static)<br>
+          <a href="https://github.com/mstampfli/veil/releases/download/v0.1.0/veil-0.1.0-linux-amd64.tar.gz">veil-0.1.0-linux-amd64.tar.gz</a><br>
+          <a href="https://github.com/mstampfli/veil/releases/download/v0.1.0/SHA256SUMS">SHA256SUMS</a>
+        </div>
+        <p style="margin-top:12px">
+          <a class="btn" href="https://github.com/mstampfli/veil/releases/tag/v0.1.0">All releases →</a>
+          <a class="btn" href="https://github.com/mstampfli/veil/blob/master/packaging/docker/README.md">Docker →</a>
+        </p>
+        <p style="font-size:12px;margin-top:10px">Verify downloads against <code>SHA256SUMS</code>. The GUI builds from source via <code>install.sh</code>.</p>
+      </div>
+    </div>
+
+    <div class="disc" style="margin-top:24px">
+      <b>Disclaimer.</b> veil is provided “as is”, with no warranty, and is a privacy tool — not a guarantee.
+      The author accepts <b>no liability</b> for any damages, including an IP or DNS leak, a kill switch that
+      fails to contain traffic, deanonymization, or data loss, arising from its use. Verify your setup
+      (<code>veil doctor</code>, <code>veil selftest</code>), understand the
+      <a href="https://github.com/mstampfli/veil/blob/master/docs/SPEC.md">threat model</a>, and use at your
+      own risk. Free edition: <b>PolyForm Noncommercial 1.0.0</b> — see
+      <a href="https://github.com/mstampfli/veil/blob/master/LICENSE">LICENSE</a>.
     </div>
   </section>
 
 </main>
 
-<footer id="contact" class="mk-footer">
-  <div class="mk-footer__grid">
-    <div>
-      <a class="mk-navbar__brand" href="/"><span class="mk-logo-mark"></span>mstampfli</a>
-      <p class="mk-faint footer__line">builds from the bottom up.<br>warm regards from a terminal.</p>
-    </div>
-    <div>
-      <h4 class="mk-footer__heading">veil</h4>
-      <div class="mk-footer__links">
-        <a href="https://github.com/mstampfli/veil">source</a>
-        <a href="/projects/veil">technical page</a>
-        <a href="#download">download</a>
-      </div>
-    </div>
-    <div>
-      <h4 class="mk-footer__heading">elsewhere</h4>
-      <div class="mk-footer__links">
-        <a href="/projects">other projects</a>
-        <a href="https://github.com/mstampfli">github</a>
-      </div>
-    </div>
-    <div>
-      <h4 class="mk-footer__heading">contact</h4>
-      <div class="mk-footer__links">
-        <a href="mailto:marc@mstampfli.com">marc@mstampfli.com</a>
-      </div>
-    </div>
-  </div>
-  <div class="mk-footer__bottom">
-    <span>© 2026 marc stampfli</span>
-    <span>served by caddy from nbg1 · <span id="clock" class="mk-mono"></span></span>
+<footer>
+  <div class="wrap row">
+    <span>veil · a project by <a href="/">mstampfli</a> · source-available (PolyForm Noncommercial)</span>
+    <span>Found a bug? <a href="https://github.com/mstampfli/veil/issues">Report it →</a></span>
   </div>
 </footer>
 
-<script src="site.js?v=6"></script>
 </body>
 </html>
