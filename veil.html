@@ -171,7 +171,7 @@
       <div class="card"><h3>Composable multi-hop</h3><p>Chain WireGuard, OpenVPN, Tor, SOCKS5 and HTTP in any order (e.g. <code>host → WireGuard → Tor → app</code>), so no single provider sees both ends.</p></div>
       <div class="card"><h3>Verified kill switch</h3><p>veil proves there is no route out except the tunnel before the app starts, and fails closed if the tunnel drops. It verifies; it doesn't assume.</p></div>
       <div class="card"><h3>Zero host capabilities</h3><p>The engine runs unprivileged via user namespaces + a userspace uplink (pasta) — <code>CapEff=0</code>, no <code>cap_net_admin</code>, no daemon.</p></div>
-      <div class="card"><h3>No telemetry</h3><p>veil makes zero network calls of its own: no analytics, no update pings, no phone-home. License checks (Pro) are fully offline.</p></div>
+      <div class="card"><h3>No telemetry</h3><p>The free edition makes zero network calls: no analytics, no update pings, no phone-home. Pro validates its license offline; its only network calls are manual updates and one activation log on install (a one-way machine hash, no usage data, no device cap). Nothing is tracked.</p></div>
       <div class="card"><h3>GUI + CLI + Docker</h3><p>A GTK desktop app and a scriptable CLI, plus a hardened capless Docker image (with an optional headful-browser variant).</p></div>
     </div>
   </section>
@@ -207,7 +207,7 @@
           <li>Behavioral jitter; advanced Tor controls (exit country, bridges)</li>
           <li>TLS-inspecting proxy with managed CA</li>
           <li>veil-browser, a hardened build with signed binary updates</li>
-          <li>Signed offline licensing + a private update channel</li>
+          <li>Signed offline license, used on all your machines (no device cap) + a private update channel</li>
         </ul>
         <p style="margin-top:14px"><a class="btn pro" href="mailto:marc@mstampfli.com?subject=Veil%20Pro%20license">Get a Pro license →</a></p>
       </div>
